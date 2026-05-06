@@ -4,10 +4,10 @@ const express = require("express");
 const cors = require("cors");
 const mongoose = require("mongoose");
 
-const deliveryRoutes = require("./routes/deliveryRoutes");
-const driverRoutes = require("./routes/driverRoutes");
-const vehicleRoutes = require("./routes/vehicleRoutes");
-const dashboardRoutes = require("./routes/dashboardRoutes");
+const deliveryRoutes = require("./models/routes/deliveryRoutes");
+const driverRoutes = require("./models/routes/driverRoutes");
+const vehicleRoutes = require("./models/routes/vehicleRoutes");
+const dashboardRoutes = require("./models/routes/dashboardRoutes");
 
 const app = express();
 const PORT = process.env.PORT || 3001;

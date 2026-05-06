@@ -4,7 +4,7 @@ const {
   createVehicle,
   updateVehicle,
   updateVehicleStatus,
-} = require("../controllers/vehicleController");
+} = require("../../controllers/vehicleController");
 
 const router = express.Router();
 

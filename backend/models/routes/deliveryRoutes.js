@@ -7,7 +7,7 @@ const {
   createDelivery,
   updateDelivery,
   deleteDelivery,
-} = require("../controllers/deliveryController");
+} = require("../../controllers/deliveryController");
 
 // Obtener todas las entregas
 router.get("/", getDeliveries);
