@@ -8,6 +8,7 @@ const deliveryRoutes = require("./models/routes/deliveryRoutes");
 const driverRoutes = require("./models/routes/driverRoutes");
 const vehicleRoutes = require("./models/routes/vehicleRoutes");
 const dashboardRoutes = require("./models/routes/dashboardRoutes");
+const recruitApplicantRoutes = require("./models/routes/recruitApplicantRoutes");
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -23,6 +24,7 @@ app.use("/api/deliveries", deliveryRoutes);
 app.use("/api/drivers", driverRoutes);
 app.use("/api/vehicles", vehicleRoutes);
 app.use("/api/dashboard", dashboardRoutes);
+app.use("/api/recruit/applicants", recruitApplicantRoutes);
 
 mongoose
   .connect(process.env.MONGODB_URI)
