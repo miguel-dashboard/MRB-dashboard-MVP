@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import "./App.css";
-
+import RecruitPage from "./modules/recruit/RecruitPage";
 const API_BASE = "http://localhost:3001/api";
 
 const menuItems = [
@@ -9,7 +9,10 @@ const menuItems = [
   { id: "drivers", label: "Choferes" },
   { id: "vehicles", label: "Vehículos" },
   { id: "incidents", label: "Incidencias" },
+  { id: "recruit", label: "Recruit" },
 ];
+
+
 
 const safeArray = (value) => (Array.isArray(value) ? value : []);
 
@@ -723,6 +726,7 @@ function App() {
             ),
             "incidents"
           )}
+          {activeView === "recruit" && <RecruitPage />}
       </main>
     </div>
   );
