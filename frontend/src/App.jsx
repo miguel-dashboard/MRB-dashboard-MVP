@@ -1,6 +1,8 @@
 import { useEffect, useMemo, useState } from "react";
 import "./App.css";
 import RecruitPage from "./modules/recruit/RecruitPage";
+import PublicRecruitForm from "./modules/recruit/PublicRecruitForm";
+
 const API_BASE = "http://localhost:3001/api";
 
 const menuItems = [
@@ -10,9 +12,8 @@ const menuItems = [
   { id: "vehicles", label: "Vehículos" },
   { id: "incidents", label: "Incidencias" },
   { id: "recruit", label: "Recruit" },
+  { id: "public-recruit", label: "Postulación" },
 ];
-
-
 
 const safeArray = (value) => (Array.isArray(value) ? value : []);
 
@@ -60,7 +61,7 @@ async function fetchFirstAvailable(urls) {
     try {
       const data = await fetchJson(url);
       return data;
-    } catch (_) {
+    } catch {
       // Intenta el siguiente endpoint
     }
   }
@@ -163,7 +164,9 @@ function App() {
 
     const averageWait =
       waitValues.length > 0
-        ? Math.round(waitValues.reduce((acc, val) => acc + val, 0) / waitValues.length)
+        ? Math.round(
+            waitValues.reduce((acc, val) => acc + val, 0) / waitValues.length
+          )
         : 0;
 
     const delayedDepartures = normalizedDeliveries.filter(
@@ -180,8 +183,12 @@ function App() {
       return p.includes("crítica") || p.includes("critica") || p.includes("alta");
     }).length;
 
-    const activeDrivers = safeArray(drivers).filter((d) => d.activo !== false).length;
-    const activeVehicles = safeArray(vehicles).filter((v) => v.activo !== false).length;
+    const activeDrivers = safeArray(drivers).filter(
+      (d) => d.activo !== false
+    ).length;
+    const activeVehicles = safeArray(vehicles).filter(
+      (v) => v.activo !== false
+    ).length;
 
     const driverRankingMap = {};
     normalizedDeliveries.forEach((d) => {
@@ -422,7 +429,9 @@ function App() {
           </div>
 
           {dashboard.topDrivers.length === 0 ? (
-            <p className="empty-text">Aún no hay entregas para calcular ranking.</p>
+            <p className="empty-text">
+              Aún no hay entregas para calcular ranking.
+            </p>
           ) : (
             <div className="list-stack">
               {dashboard.topDrivers.map((item, index) => (
@@ -450,7 +459,9 @@ function App() {
           </div>
 
           {dashboard.topVehicles.length === 0 ? (
-            <p className="empty-text">Aún no hay vehículos con entregas registradas.</p>
+            <p className="empty-text">
+              Aún no hay vehículos con entregas registradas.
+            </p>
           ) : (
             <div className="list-stack">
               {dashboard.topVehicles.map((item, index) => (
@@ -512,7 +523,11 @@ function App() {
                 <div className="list-row" key={item._id || item.id}>
                   <div>
                     <strong>{item.cliente || "Sin cliente"}</strong>
-                    <p>{item.tipoIncidencia || item.observacion || "Sin detalle"}</p>
+                    <p>
+                      {item.tipoIncidencia ||
+                        item.observacion ||
+                        "Sin detalle"}
+                    </p>
                   </div>
                   <span className={`tag ${getStatusClass(item.estado)}`}>
                     {item.estado}
@@ -554,7 +569,9 @@ function App() {
               {dashboard.deliveryTable.length === 0 ? (
                 <tr>
                   <td colSpan="8" className="empty-row">
-                    {loading ? "Cargando entregas..." : "No hay entregas registradas"}
+                    {loading
+                      ? "Cargando entregas..."
+                      : "No hay entregas registradas"}
                   </td>
                 </tr>
               ) : (
@@ -567,7 +584,9 @@ function App() {
                     <td>{delivery.chofer || "-"}</td>
                     <td>{delivery.vehiculo || "-"}</td>
                     <td>
-                      <span className={`tag ${getStatusClass(delivery.estado)}`}>
+                      <span
+                        className={`tag ${getStatusClass(delivery.estado)}`}
+                      >
                         {delivery.estado}
                       </span>
                     </td>
@@ -597,7 +616,9 @@ function App() {
 
       {items.length === 0 ? (
         <p className="empty-text">
-          {loading ? "Cargando información..." : `No hay ${title.toLowerCase()} registrados.`}
+          {loading
+            ? "Cargando información..."
+            : `No hay ${title.toLowerCase()} registrados.`}
         </p>
       ) : (
         <div className="cards-list">
@@ -607,25 +628,44 @@ function App() {
                 <>
                   <div className="card-title-row">
                     <h4>{item.nombre || item.name || "Chofer sin nombre"}</h4>
-                    <span className={`tag ${item.activo === false ? "incident" : "done"}`}>
+                    <span
+                      className={`tag ${
+                        item.activo === false ? "incident" : "done"
+                      }`}
+                    >
                       {item.activo === false ? "Inactivo" : "Activo"}
                     </span>
                   </div>
-                  <p><strong>RUT:</strong> {item.rut || "-"}</p>
-                  <p><strong>Teléfono:</strong> {item.telefono || item.phone || "-"}</p>
+                  <p>
+                    <strong>RUT:</strong> {item.rut || "-"}
+                  </p>
+                  <p>
+                    <strong>Teléfono:</strong>{" "}
+                    {item.telefono || item.phone || "-"}
+                  </p>
                 </>
               )}
 
               {type === "vehicles" && (
                 <>
                   <div className="card-title-row">
-                    <h4>{item.patente || item.placa || "Vehículo sin patente"}</h4>
-                    <span className={`tag ${item.activo === false ? "incident" : "done"}`}>
+                    <h4>
+                      {item.patente || item.placa || "Vehículo sin patente"}
+                    </h4>
+                    <span
+                      className={`tag ${
+                        item.activo === false ? "incident" : "done"
+                      }`}
+                    >
                       {item.activo === false ? "Inactivo" : "Activo"}
                     </span>
                   </div>
-                  <p><strong>Marca:</strong> {item.marca || "-"}</p>
-                  <p><strong>Modelo:</strong> {item.modelo || "-"}</p>
+                  <p>
+                    <strong>Marca:</strong> {item.marca || "-"}
+                  </p>
+                  <p>
+                    <strong>Modelo:</strong> {item.modelo || "-"}
+                  </p>
                 </>
               )}
 
@@ -635,9 +675,15 @@ function App() {
                     <h4>{item.cliente || "Sin cliente"}</h4>
                     <span className="tag incident">Incidencia</span>
                   </div>
-                  <p><strong>Tipo:</strong> {item.tipoIncidencia || "-"}</p>
-                  <p><strong>Dirección:</strong> {item.direccion || "-"}</p>
-                  <p><strong>Detalle:</strong> {item.observacion || "-"}</p>
+                  <p>
+                    <strong>Tipo:</strong> {item.tipoIncidencia || "-"}
+                  </p>
+                  <p>
+                    <strong>Dirección:</strong> {item.direccion || "-"}
+                  </p>
+                  <p>
+                    <strong>Detalle:</strong> {item.observacion || "-"}
+                  </p>
                 </>
               )}
 
@@ -645,13 +691,24 @@ function App() {
                 <>
                   <div className="card-title-row">
                     <h4>{item.cliente || "Sin cliente"}</h4>
-                    <span className={`tag ${getStatusClass(normalizeStatus(item.estado))}`}>
+                    <span
+                      className={`tag ${getStatusClass(
+                        normalizeStatus(item.estado)
+                      )}`}
+                    >
                       {normalizeStatus(item.estado)}
                     </span>
                   </div>
-                  <p><strong>Dirección:</strong> {item.direccion || "-"}</p>
-                  <p><strong>Fecha:</strong> {formatDate(item.fecha || item.createdAt)}</p>
-                  <p><strong>Chofer:</strong> {item.chofer || "-"}</p>
+                  <p>
+                    <strong>Dirección:</strong> {item.direccion || "-"}
+                  </p>
+                  <p>
+                    <strong>Fecha:</strong>{" "}
+                    {formatDate(item.fecha || item.createdAt)}
+                  </p>
+                  <p>
+                    <strong>Chofer:</strong> {item.chofer || "-"}
+                  </p>
                 </>
               )}
             </div>
@@ -726,7 +783,8 @@ function App() {
             ),
             "incidents"
           )}
-          {activeView === "recruit" && <RecruitPage />}
+        {activeView === "recruit" && <RecruitPage />}
+        {activeView === "public-recruit" && <PublicRecruitForm />}
       </main>
     </div>
   );

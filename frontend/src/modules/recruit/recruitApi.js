@@ -24,3 +24,13 @@ export function updateRecruitApplicantStatus(applicantId, estado) {
     body: JSON.stringify({ estado }),
   });
 }
+
+export function createRecruitApplicant(applicant) {
+  return requestJson(API_BASE, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(applicant),
+  });
+}
