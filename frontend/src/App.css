@@ -1029,3 +1029,67 @@ tbody tr:hover {
     flex-direction: column;
   }
 }
+
+.recruit-toolbar {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 14px;
+  margin-bottom: 14px;
+  padding: 12px 14px;
+  border: 1px solid rgba(121, 151, 231, 0.12);
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.018);
+}
+
+.recruit-operation-filter {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+
+.recruit-operation-filter span {
+  color: var(--text-soft);
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.recruit-operation-filter select {
+  min-width: 220px;
+  height: 36px;
+  padding: 0 10px;
+  border: 1px solid rgba(121, 151, 231, 0.16);
+  border-radius: 10px;
+  outline: none;
+  background: #0b1530;
+  color: var(--text);
+  font: inherit;
+  font-size: 0.84rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.recruit-operation-filter select:focus {
+  border-color: rgba(120, 216, 255, 0.48);
+  box-shadow: 0 0 0 3px rgba(79, 140, 255, 0.1);
+}
+
+.recruit-filter-count {
+  color: var(--text-dim);
+  font-size: 0.82rem;
+  font-weight: 700;
+}
+
+@media (max-width: 760px) {
+  .recruit-toolbar {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .recruit-operation-filter,
+  .recruit-operation-filter select {
+    width: 100%;
+  }
+}

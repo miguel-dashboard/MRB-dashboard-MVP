@@ -51,6 +51,7 @@ function RecruitTableRow({ applicant, isUpdating, onStatusChange }) {
       <td>{applicant.telefono || applicant.whatsapp || "-"}</td>
       <td>{applicant.comuna || "-"}</td>
       <td>{applicant.tipoVehiculo || "-"}</td>
+      <td>{applicant.campaignName || "Sin operación"}</td>
       <td>
         <span className={`tag ${getRecruitStatusClass(applicant.estado)}`}>
           {statusLabels[applicant.estado] || applicant.estado || "Nuevo"}
@@ -111,14 +112,16 @@ function RecruitTable({ applicants, loading, updatingId, onStatusChange }) {
             <th>Teléfono</th>
             <th>Comuna</th>
             <th>Tipo vehículo</th>
+            <th>Operación</th>
             <th>Estado</th>
             <th>Acciones</th>
+          
           </tr>
         </thead>
         <tbody>
           {applicants.length === 0 ? (
             <tr>
-              <td className="empty-row" colSpan="6">
+              <td className="empty-row" colSpan="7">
                 {loading ? "Cargando postulantes..." : "No hay postulantes registrados."}
               </td>
             </tr>
