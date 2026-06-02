@@ -89,13 +89,22 @@ function RecruitTableRow({ applicant, isUpdating, onStatusChange }) {
           </label>
 
           <button
-            className="recruit-action-btn status"
-            disabled={isUpdating || selectedStatus === applicant.estado}
-            onClick={() => onStatusChange(applicant._id, selectedStatus)}
-            type="button"
-          >
-            {isUpdating ? "Guardando..." : "Cambiar estado"}
-          </button>
+  className="recruit-action-btn approve"
+  disabled={isUpdating || applicant.estado === "aprobado"}
+  onClick={() => onStatusChange(applicant._id, "aprobado")}
+  type="button"
+>
+  {applicant.estado === "aprobado" ? "Aprobado" : "Aprobar"}
+</button>
+
+<button
+  className="recruit-action-btn status"
+  disabled={isUpdating || selectedStatus === applicant.estado}
+  onClick={() => onStatusChange(applicant._id, selectedStatus)}
+  type="button"
+>
+  {isUpdating ? "Guardando..." : "Cambiar estado"}
+</button>
         </div>
       </td>
     </tr>
