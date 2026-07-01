@@ -83,6 +83,11 @@ const recruitApplicantSchema = new mongoose.Schema(
       default: "",
       trim: true,
     },
+    operacion: {
+    type: String,
+    default: "",
+    trim: true,
+    },
     patente: {
       type: String,
       default: "",

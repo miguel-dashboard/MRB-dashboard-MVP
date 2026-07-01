@@ -2,24 +2,24 @@ import { useState } from "react";
 
 const applicantStatuses = [
   "nuevo",
-  "contactado",
-  "interesado",
-  "documentacion_pendiente",
   "en_revision",
+  "contactado",
+  "entrevista",
+  "documentos",
   "aprobado",
+  "asignado",
   "rechazado",
-  "convertido_a_chofer",
 ];
 
 const statusLabels = {
   nuevo: "Nuevo",
-  contactado: "Contactado",
-  interesado: "Interesado",
-  documentacion_pendiente: "Documentación pendiente",
   en_revision: "En revisión",
+  contactado: "Contactado",
+  entrevista: "Entrevista",
+  documentos: "Documentos",
   aprobado: "Aprobado",
+  asignado: "Asignado",
   rechazado: "Rechazado",
-  convertido_a_chofer: "Convertido a chofer",
 };
 
 function getApplicantName(applicant) {
@@ -40,7 +40,7 @@ function getRecruitStatusClass(status) {
   return "pending";
 }
 
-function RecruitTableRow({ applicant, isUpdating, onStatusChange }) {
+function RecruitTableRow({ applicant, isUpdating, onStatusChange,  onViewApplicant }) {
   const [selectedStatus, setSelectedStatus] = useState(applicant.estado || "nuevo");
   const applicantName = getApplicantName(applicant);
   const whatsappUrl = getWhatsAppUrl(applicant);
@@ -51,7 +51,7 @@ function RecruitTableRow({ applicant, isUpdating, onStatusChange }) {
       <td>{applicant.telefono || applicant.whatsapp || "-"}</td>
       <td>{applicant.comuna || "-"}</td>
       <td>{applicant.tipoVehiculo || "-"}</td>
-      <td>{applicant.campaignName || "Sin operación"}</td>
+      <td>{applicant.operacion || applicant.campaignName || "Sin operación"}</td>
       <td>
         <span className={`tag ${getRecruitStatusClass(applicant.estado)}`}>
           {statusLabels[applicant.estado] || applicant.estado || "Nuevo"}
@@ -71,6 +71,14 @@ function RecruitTableRow({ applicant, isUpdating, onStatusChange }) {
           ) : (
             <span className="recruit-action-btn disabled">Sin teléfono</span>
           )}
+
+          <button
+  className="recruit-action-btn view"
+onClick={() => onViewApplicant?.(applicant)}
+  type="button"
+>
+  Ver ficha
+</button>
 
           <label className="recruit-status-control">
             <span className="sr-only">Nuevo estado para {applicantName}</span>
@@ -111,7 +119,7 @@ function RecruitTableRow({ applicant, isUpdating, onStatusChange }) {
   );
 }
 
-function RecruitTable({ applicants, loading, updatingId, onStatusChange }) {
+function RecruitTable({ applicants, loading, updatingId, onStatusChange, onViewApplicant }) {
   return (
     <div className="table-wrap recruit-table-wrap">
       <table className="recruit-table">
@@ -141,6 +149,7 @@ function RecruitTable({ applicants, loading, updatingId, onStatusChange }) {
                 isUpdating={updatingId === applicant._id}
                 key={`${applicant._id}-${applicant.estado}`}
                 onStatusChange={onStatusChange}
+                 onViewApplicant={onViewApplicant}
               />
             ))
           )}
