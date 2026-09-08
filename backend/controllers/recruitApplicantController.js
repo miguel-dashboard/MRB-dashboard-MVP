@@ -1,4 +1,5 @@
 const mongoose = require("mongoose");
+const normalizePhone = require("../utils/normalizePhone");
 const RecruitApplicant = require("../models/RecruitApplicant");
 
 const { applicantStatuses } = RecruitApplicant;
@@ -79,7 +80,39 @@ const getRecruitApplicantById = async (req, res) => {
 // POST - crear un postulante Recruit
 const createRecruitApplicant = async (req, res) => {
   try {
-    const newApplicant = new RecruitApplicant(req.body);
+    const telefono = normalizePhone(req.body?.telefono);
+
+    if (!/^\+?\d{8,15}$/.test(telefono) || /^(\d)\1+$/.test(telefono.replace(/^\+/, ""))) {
+      return res.status(400).json({
+        message: "Ingresa un teléfono válido, por ejemplo +56912345678.",
+      });
+    }
+
+    // Solo datos de postulación usados por la landing y el formulario del dashboard.
+    // Los campos de gestión no se copian: sus valores iniciales pertenecen al modelo.
+    const applicantData = {
+      nombre: req.body.nombre,
+      apellido: req.body.apellido,
+      telefono,
+      whatsapp: normalizePhone(req.body.whatsapp),
+      comuna: req.body.comuna,
+      region: req.body.region,
+      tipoPostulante: req.body.tipoPostulante,
+      tipoVehiculo: req.body.tipoVehiculo,
+      patente: req.body.patente,
+      capacidadCarga: req.body.capacidadCarga,
+      anosExperiencia: req.body.anosExperiencia,
+      operacion: req.body.operacion,
+      campaignName: req.body.campaignName,
+      disponibilidad: req.body.disponibilidad,
+      experiencia: req.body.experiencia,
+      observacion: req.body.observacion,
+      // Comentario del postulante en PublicRecruitForm; no son notas internas.
+      notas: req.body.notas,
+      fuente: req.body.fuente,
+    };
+
+    const newApplicant = new RecruitApplicant(applicantData);
     const savedApplicant = await newApplicant.save();
 
     res.status(201).json({

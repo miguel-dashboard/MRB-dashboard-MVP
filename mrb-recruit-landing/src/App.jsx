@@ -1,7 +1,7 @@
-import { useMemo, useState } from "react"
+import { useEffect, useMemo, useRef, useState } from "react"
 import "./index.css"
 
-const API_ENDPOINT = "http://localhost:3001/api/recruit/applicants"
+const API_ENDPOINT = import.meta.env.VITE_RECRUIT_API_URL || "http://localhost:3001/api/recruit/applicants"
 const WHATSAPP_NUMBER = "56978701650"
 const WHATSAPP_MESSAGE =  
   "Hola, quiero postular con mi vehículo a operaciones disponibles de MR&B Recruit. ¿Me pueden orientar?"
@@ -175,11 +175,19 @@ function SectionHeading({ eyebrow, title, text, align = "center", tone = "dark" 
   )
 }
 
-function RecruitForm() {
+function RecruitForm({ whatsappUrl }) {
   const [form, setForm] = useState(initialForm)
   const [status, setStatus] = useState("idle")
   const [message, setMessage] = useState("")
   const [step, setStep] = useState(1)
+  const messageRef = useRef(null)
+
+  useEffect(() => {
+    if (status === "success" || status === "error") {
+      messageRef.current?.focus()
+      messageRef.current?.scrollIntoView({ block: "center" })
+    }
+  }, [status, message])
 
   const canSubmit = useMemo(
     () =>
@@ -218,6 +226,13 @@ function RecruitForm() {
       return
     }
 
+    const telefono = form.telefono.replace(/\s+/g, "")
+    if (!/^\+?\d{8,15}$/.test(telefono) || /^(\d)\1+$/.test(telefono.replace(/^\+/, ""))) {
+      setStatus("error")
+      setMessage("Ingresa un teléfono válido, por ejemplo +56912345678.")
+      return
+    }
+
     setStatus("sending")
     setMessage("Enviando postulación...")
 
@@ -227,7 +242,7 @@ function RecruitForm() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           nombre: form.nombre.trim(),
-          telefono: form.telefono.trim(),
+          telefono,
           comuna: form.comuna.trim(),
           tipoVehiculo: form.tipoVehiculo,
           operacion: form.operacion,
@@ -245,7 +260,7 @@ function RecruitForm() {
       )
       setForm(initialForm)
       setStep(1)
-    } catch (error) {
+    } catch {
       setStatus("error")
       setMessage(
         "No pudimos registrar tu postulación en este momento. Por favor intenta nuevamente. Si el problema persiste, puedes escribirnos por WhatsApp y te ayudamos."
@@ -255,6 +270,18 @@ function RecruitForm() {
 
   return (
     <form className="recruit-form" onSubmit={handleSubmit}>
+      {message && (
+        <div ref={messageRef} tabIndex={-1} className={`form-message form-message--${status}`} role="status">
+          {message}
+          {status === "error" && (
+            <div>
+              <a href={whatsappUrl} target="_blank" rel="noreferrer" style={{ textDecoration: "underline" }}>
+                Pedir ayuda por WhatsApp
+              </a>
+            </div>
+          )}
+        </div>
+      )}
 
       {/* PASO 1 — Siempre visible */}
       <div className="form-grid">
@@ -273,6 +300,7 @@ function RecruitForm() {
         <label>
           <span>Teléfono *</span>
           <input
+            type="tel"
             name="telefono"
             value={form.telefono}
             onChange={updateField}
@@ -386,12 +414,6 @@ function RecruitForm() {
           />
         </label>
 
-        {message && (
-          <p className={`form-message form-message--${status}`} role="status">
-            {message}
-          </p>
-        )}
-
         <button
           className="button button-primary form-submit"
           type="submit"
@@ -433,11 +455,10 @@ function App() {
         <section className="hero-grid shell">
           <div className="hero-copy">
             <span className="eyebrow">MR&B Servicios Logísticos</span>
-            <h1>Suma tu vehículo a operaciones logísticas reales</h1>
+            <h1>¿Tienes camioneta, furgón o camión?</h1>
             <p>
-              MR&B Recruit conecta transportistas y dueños de vehículos con
-              oportunidades de reparto, distribución y transporte para operaciones
-              activas.
+              Postula a operaciones logísticas activas con MR&B. Revisamos tu comuna,
+              tipo de vehículo y disponibilidad para contactarte si hay compatibilidad.
             </p>
 
             <div className="hero-actions">
@@ -489,7 +510,7 @@ function App() {
     <div className="mobile-operations-strip">
       <strong>Operaciones con captación activa</strong>
       <p>Chilexpress · Brightcell · Viña Concha y Toro · Otros clientes</p>
-      <span>Las oportunidades varían según zona, vehículo y disponibilidad.</span>
+      <span>Postulación sujeta a comuna, vehículo, documentación y disponibilidad operativa.</span>
     </div>
   </div>
 
@@ -515,7 +536,7 @@ function App() {
       </div>
     </div>
 
-    <RecruitForm />
+    <RecruitForm whatsappUrl={whatsappUrl} />
   </div>
 </section>
 
@@ -563,7 +584,7 @@ function App() {
             <SectionHeading
               eyebrow="Operaciones disponibles"
               title="Clientes y servicios sujetos a demanda operacional"
-              text="Las oportunidades pueden variar según comuna, volumen, documentación, cliente, tipo de vehículo y disponibilidad."
+              text="Postulación sujeta a comuna, vehículo, documentación y disponibilidad operativa."
               tone="light"
             />
 
@@ -650,6 +671,7 @@ function App() {
             <a href="#vehiculos">Vehículos</a>
             <a href="#operaciones">Operaciones</a>
             <a href="#postula">Postular</a>
+            <a href={whatsappUrl} target="_blank" rel="noreferrer">Ayuda por WhatsApp</a>
           </nav>
         </div>
       </footer>

@@ -69,6 +69,16 @@ const recruitApplicantSchema = new mongoose.Schema(
       default: "",
       trim: true,
     },
+    experiencia: {
+      type: String,
+      default: "",
+      trim: true,
+    },
+    observacion: {
+      type: String,
+      default: "",
+      trim: true,
+    },
     anosExperiencia: {
       type: Number,
       min: 0,

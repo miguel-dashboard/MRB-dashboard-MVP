@@ -1649,3 +1649,10 @@ textarea:focus {
     margin-top: 10px;
   }
 }
+/* Mantener completo el mensaje de campaña también en mobile. */
+.hero-copy > p:not(.hero-social-proof) {
+  display: block;
+  overflow: visible;
+  line-clamp: unset;
+  -webkit-line-clamp: unset;
+}
