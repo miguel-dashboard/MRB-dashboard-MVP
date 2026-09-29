@@ -3,6 +3,7 @@ import "./App.css";
 import RecruitPage from "./modules/recruit/RecruitPage";
 import PublicRecruitForm from "./modules/recruit/PublicRecruitForm";
 import OperationDaily from "./components/OperationDaily";
+import IncidentsPage from "./components/IncidentsPage";
 
 const API_BASE = "http://localhost:3001/api";
 
@@ -778,14 +779,7 @@ function App() {
           renderSimpleView("Choferes", drivers, "drivers")}
         {activeView === "vehicles" &&
           renderSimpleView("Vehículos", vehicles, "vehicles")}
-        {activeView === "incidents" &&
-          renderSimpleView(
-            "Incidencias",
-            deliveries.filter(
-              (d) => normalizeStatus(d.estado).toLowerCase() === "incidencia"
-            ),
-            "incidents"
-          )}
+        {activeView === "incidents" && <IncidentsPage />}
         {activeView === "recruit" && <RecruitPage />}
         {activeView === "public-recruit" && <PublicRecruitForm />}
       </main>
