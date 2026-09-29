@@ -724,3 +724,130 @@ tbody tr:hover {
     width: 100%;
   }
 }
+
+/* Daily operation module */
+.operation-module {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.operation-kpis {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 10px;
+  margin-bottom: 16px;
+}
+
+.operation-kpi {
+  padding: 12px 14px;
+  border: 1px solid rgba(122, 148, 215, 0.10);
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.025);
+}
+
+.operation-kpi span {
+  display: block;
+  color: var(--text-soft);
+  font-size: 0.76rem;
+  margin-bottom: 5px;
+}
+
+.operation-kpi strong {
+  font-size: 1.35rem;
+}
+
+.operation-form {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.operation-form label {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  color: var(--text-soft);
+  font-size: 0.78rem;
+  font-weight: 700;
+}
+
+.operation-form input,
+.operation-form select,
+.operation-filter {
+  min-height: 40px;
+  border-radius: 10px;
+  border: 1px solid rgba(121, 151, 231, 0.16);
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--text);
+  padding: 0 10px;
+  outline: none;
+}
+
+.operation-form select option,
+.operation-filter option {
+  color: #111827;
+}
+
+.operation-check {
+  flex-direction: row !important;
+  align-items: center;
+  align-self: end;
+  min-height: 40px;
+}
+
+.operation-check input {
+  min-height: auto;
+  width: 18px;
+  height: 18px;
+}
+
+.operation-wide {
+  grid-column: span 3;
+}
+
+.operation-submit {
+  min-height: 42px;
+  align-self: end;
+  border: 1px solid rgba(87, 215, 163, 0.20);
+  border-radius: 11px;
+  background: rgba(87, 215, 163, 0.14);
+  color: #b6ffd8;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.operation-submit:disabled {
+  opacity: 0.6;
+  cursor: wait;
+}
+
+.operation-message {
+  margin: 12px 0 0;
+  color: var(--text-soft);
+}
+
+@media (max-width: 980px) {
+  .operation-kpis {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .operation-form {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .operation-wide {
+    grid-column: span 2;
+  }
+}
+
+@media (max-width: 640px) {
+  .operation-kpis,
+  .operation-form {
+    grid-template-columns: 1fr;
+  }
+
+  .operation-wide {
+    grid-column: span 1;
+  }
+}
