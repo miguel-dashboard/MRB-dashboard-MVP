@@ -10,6 +10,7 @@ const driverRoutes = require("./models/routes/driverRoutes");
 const vehicleRoutes = require("./models/routes/vehicleRoutes");
 const dashboardRoutes = require("./models/routes/dashboardRoutes");
 const recruitApplicantRoutes = require("./models/routes/recruitApplicantRoutes");
+const operationDayRoutes = require("./models/routes/operationDayRoutes");
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -31,6 +32,7 @@ app.use("/api/drivers", driverRoutes);
 app.use("/api/vehicles", vehicleRoutes);
 app.use("/api/dashboard", dashboardRoutes);
 app.use("/api/recruit/applicants", recruitApplicantRoutes);
+app.use("/api/operation-days", operationDayRoutes);
 
 if (require.main === module) {
 mongoose
