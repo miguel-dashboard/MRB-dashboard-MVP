@@ -1,10 +1,12 @@
 import { useEffect, useMemo, useState } from "react";
 import "./App.css";
+import OperationDaily from "./components/OperationDaily";
 
 const API_BASE = "http://localhost:3001/api";
 
 const menuItems = [
   { id: "dashboard", label: "Dashboard" },
+  { id: "operations", label: "Operación diaria" },
   { id: "deliveries", label: "Entregas" },
   { id: "drivers", label: "Choferes" },
   { id: "vehicles", label: "Vehículos" },
@@ -709,6 +711,7 @@ function App() {
         </header>
 
         {activeView === "dashboard" && renderDashboard()}
+        {activeView === "operations" && <OperationDaily />}
         {activeView === "deliveries" &&
           renderSimpleView("Entregas", deliveries, "deliveries")}
         {activeView === "drivers" &&
