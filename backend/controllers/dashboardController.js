@@ -135,7 +135,7 @@ const getDashboardSummary = async (req, res) => {
 
     const recruitByOperationMap = {};
     applicants.forEach((item) => {
-      const key = item.campaignName || item.operacion || "Sin asignar";
+      const key = item.operacion || "Sin asignar";
       recruitByOperationMap[key] = (recruitByOperationMap[key] || 0) + 1;
     });
 
