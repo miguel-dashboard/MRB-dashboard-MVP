@@ -61,7 +61,7 @@ function RecruitPage() {
       applicants.filter((applicant) =>
         operationFilter === "todas"
           ? true
-          : applicant.campaignName === operationFilter
+          : applicant.operacion === operationFilter
       ),
     [applicants, operationFilter]
   );
@@ -117,9 +117,7 @@ function RecruitPage() {
             >
               <option value="todas">Todas</option>
               <option value="Chilexpress">Chilexpress</option>
-              <option value="Brightcell">Brightcell</option>
-              <option value="Viña Concha y Toro">Viña Concha y Toro</option>
-              <option value="Otra">Otra</option>
+              <option value="Starken - Hub Las Condes">Starken - Hub Las Condes</option>
             </select>
           </label>
 
