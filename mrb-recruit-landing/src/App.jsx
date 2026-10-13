@@ -155,6 +155,48 @@ const initialForm = {
   observacion: "",
 }
 
+const OPERATION_STARKEN = "Starken - Hub Las Condes"
+
+function normalizeLandingOperation(value = "") {
+  const normalized = String(value).trim().toLowerCase()
+
+  if (normalized.includes("starken")) return OPERATION_STARKEN
+  if (normalized.includes("chilexpress")) return "Chilexpress"
+
+  return ""
+}
+
+function normalizeTrafficSource(value = "") {
+  const normalized = String(value).trim().toLowerCase()
+
+  if (normalized.includes("facebook") || normalized.includes("meta")) return "facebook_ads"
+  if (normalized.includes("instagram")) return "instagram_ads"
+  if (normalized.includes("google")) return "google_ads"
+  if (normalized.includes("whatsapp")) return "whatsapp"
+  if (normalized.includes("refer")) return "referido"
+
+  return "otro"
+}
+
+function getLandingTracking() {
+  const params = new URLSearchParams(window.location.search)
+  const utmSource = params.get("utm_source") || ""
+  const utmMedium = params.get("utm_medium") || ""
+  const utmCampaign = params.get("utm_campaign") || ""
+  const utmContent = params.get("utm_content") || ""
+  const operationParam = params.get("operacion") || params.get("operation") || ""
+
+  return {
+    fuente: normalizeTrafficSource(utmSource),
+    campaignName: utmCampaign,
+    utmSource,
+    utmMedium,
+    utmCampaign,
+    utmContent,
+    defaultOperation: normalizeLandingOperation(operationParam),
+  }
+}
+
 function SectionHeading({ eyebrow, title, text, align = "center", tone = "dark" }) {
   return (
     <div className={`section-heading section-heading--${align} section-heading--${tone}`}>
@@ -165,8 +207,11 @@ function SectionHeading({ eyebrow, title, text, align = "center", tone = "dark" 
   )
 }
 
-function RecruitForm({ whatsappUrl }) {
-  const [form, setForm] = useState(initialForm)
+function RecruitForm({ whatsappUrl, tracking }) {
+  const [form, setForm] = useState(() => ({
+    ...initialForm,
+    operacion: tracking.defaultOperation || "",
+  }))
   const [status, setStatus] = useState("idle")
   const [message, setMessage] = useState("")
   const [step, setStep] = useState(1)
@@ -236,6 +281,12 @@ function RecruitForm({ whatsappUrl }) {
           comuna: form.comuna.trim(),
           tipoVehiculo: form.tipoVehiculo,
           operacion: form.operacion,
+          campaignName: tracking.campaignName,
+          fuente: tracking.fuente,
+          utmSource: tracking.utmSource,
+          utmMedium: tracking.utmMedium,
+          utmCampaign: tracking.utmCampaign,
+          utmContent: tracking.utmContent,
           disponibilidad: form.disponibilidad,
           experiencia: form.experiencia.trim(),
           observacion: form.observacion.trim(),
@@ -248,7 +299,10 @@ function RecruitForm({ whatsappUrl }) {
       setMessage(
         "¡Postulación recibida! Revisaremos tu perfil según comuna, vehículo y disponibilidad. Si hay una operación compatible, te contactamos directamente por teléfono o WhatsApp."
       )
-      setForm(initialForm)
+      setForm({
+        ...initialForm,
+        operacion: tracking.defaultOperation || "",
+      })
       setStep(1)
     } catch {
       setStatus("error")
@@ -418,6 +472,8 @@ function RecruitForm({ whatsappUrl }) {
 }
 
 function App() {
+  const tracking = useMemo(() => getLandingTracking(), [])
+
   const whatsappUrl = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(
     WHATSAPP_MESSAGE,
   )}`
@@ -527,7 +583,7 @@ function App() {
       </div>
     </div>
 
-    <RecruitForm whatsappUrl={whatsappUrl} />
+    <RecruitForm whatsappUrl={whatsappUrl} tracking={tracking} />
   </div>
 </section>
 
