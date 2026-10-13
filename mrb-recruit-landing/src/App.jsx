@@ -9,22 +9,12 @@ const operations = [
   {
     name: "Chilexpress",
     detail:
-      "Distribución, reparto urbano y apoyo operacional con foco en cumplimiento y cobertura.",
+      "Captación para operación de última milla y distribución. Los cupos dependen de carga, zona, vehículo, documentación y disponibilidad.",
   },
   {
-    name: "Brightcell",
+    name: "Starken - Hub Las Condes",
     detail:
-      "Servicios logísticos que requieren orden, comunicación y trazabilidad de cada asignación.",
-  },
-  {
-    name: "Viña Concha y Toro",
-    detail:
-      "Apoyo para cargas planificadas, rutas coordinadas y transporte con estándares de cliente.",
-  },
-  {
-    name: "Otros clientes",
-    detail:
-      "Nuevos requerimientos según temporada, zona, tipo de vehículo y disponibilidad operativa.",
+      "Captación prioritaria para el hub Las Condes. Evaluamos vehículo, comuna, experiencia, documentación y disponibilidad para la operación.",
   },
 ]
 
@@ -455,10 +445,11 @@ function App() {
         <section className="hero-grid shell">
           <div className="hero-copy">
             <span className="eyebrow">MR&B Servicios Logísticos</span>
-            <h1>¿Tienes camioneta, furgón o camión?</h1>
+            <h1>Estamos incorporando móviles para Chilexpress y Starken</h1>
             <p>
-              Postula a operaciones logísticas activas con MR&B. Revisamos tu comuna,
-              tipo de vehículo y disponibilidad para contactarte si hay compatibilidad.
+              Si tienes camioneta, furgón o camión y quieres trabajar en reparto,
+              postula directamente a MR&B. Hoy tenemos captación activa para
+              Chilexpress y Starken - Hub Las Condes.
             </p>
 
             <div className="hero-actions">
@@ -471,7 +462,7 @@ function App() {
  </div>
 
 <p className="hero-social-proof">
-  ✓ Más de 40 transportistas ya postularon · 3 operaciones activas
+  ✓ Captación activa: Chilexpress · Starken - Hub Las Condes
 </p>
 </div>
           <aside className="hero-panel hero-panel-simple" aria-label="Postulación simple">
@@ -487,9 +478,9 @@ function App() {
             </p>
 
             <ul className="hero-checklist">
-              <li>Vehículos comerciales</li>
-              <li>Operaciones activas</li>
-              <li>Contacto del equipo MR&B</li>
+              <li>Chilexpress</li>
+              <li>Starken - Hub Las Condes</li>
+              <li>Postulación directa a MR&B Recruit</li>
             </ul>
           </aside>
         </section>
@@ -509,7 +500,7 @@ function App() {
   <div className="shell">
     <div className="mobile-operations-strip">
       <strong>Operaciones con captación activa</strong>
-      <p>Chilexpress · Brightcell · Viña Concha y Toro · Otros clientes</p>
+      <p>Chilexpress · Starken - Hub Las Condes</p>
       <span>Postulación sujeta a comuna, vehículo, documentación y disponibilidad operativa.</span>
     </div>
   </div>
@@ -520,8 +511,8 @@ function App() {
     <div className="form-copy">
       <SectionHeading
         eyebrow="Postulación"
-        title="Postula tu vehículo a MR&B Recruit"
-        text="Registra tus datos para evaluación. La postulación no garantiza asignación inmediata; permite iniciar una revisión operacional."
+        title="Postula tu vehículo para Chilexpress o Starken"
+        text="Completa el formulario una sola vez. El equipo MR&B revisará tu vehículo, comuna y disponibilidad para la operación seleccionada."
         align="left"
         tone="light"
       />
@@ -582,9 +573,9 @@ function App() {
         <section className="section operations-section" id="operaciones">
           <div className="shell">
             <SectionHeading
-              eyebrow="Operaciones disponibles"
-              title="Clientes y servicios sujetos a demanda operacional"
-              text="Postulación sujeta a comuna, vehículo, documentación y disponibilidad operativa."
+              eyebrow="Captación activa"
+              title="Dos operaciones reales para postular hoy"
+              text="Chilexpress y Starken - Hub Las Condes. Los cupos dependen de demanda, vehículo, documentación, zona y disponibilidad."
               tone="light"
             />
 
