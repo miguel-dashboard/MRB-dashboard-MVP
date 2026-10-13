@@ -4,6 +4,7 @@ import RecruitPage from "./modules/recruit/RecruitPage";
 import PublicRecruitForm from "./modules/recruit/PublicRecruitForm";
 import OperationDaily from "./components/OperationDaily";
 import IncidentsPage from "./components/IncidentsPage";
+import DashboardPage from "./components/DashboardPage";
 
 const API_BASE = "http://localhost:3001/api";
 
@@ -771,7 +772,7 @@ function App() {
           </div>
         </header>
 
-        {activeView === "dashboard" && renderDashboard()}
+        {activeView === "dashboard" && <DashboardPage backendOnline={backendOnline} />}
         {activeView === "operations" && <OperationDaily />}
         {activeView === "deliveries" &&
           renderSimpleView("Entregas", deliveries, "deliveries")}
