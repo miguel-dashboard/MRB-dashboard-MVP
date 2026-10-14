@@ -1887,3 +1887,10 @@ recruit-kpi-grid {
     grid-template-columns: 1fr;
   }
 }
+
+
+.recruit-followup-badge.closed {
+  border-color: rgba(170, 180, 205, 0.18);
+  background: rgba(170, 180, 205, 0.08);
+  color: var(--text-soft);
+}
