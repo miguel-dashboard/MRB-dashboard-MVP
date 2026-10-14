@@ -4,10 +4,10 @@ const applicantStatuses = [
   "nuevo",
   "en_revision",
   "contactado",
-  "entrevista",
-  "documentos",
+  "interesado",
+  "documentacion_pendiente",
   "aprobado",
-  "asignado",
+  "convertido_a_chofer",
   "rechazado",
 ];
 
@@ -15,10 +15,10 @@ const statusLabels = {
   nuevo: "Nuevo",
   en_revision: "En revisión",
   contactado: "Contactado",
-  entrevista: "Entrevista",
-  documentos: "Documentos",
+  interesado: "Interesado",
+  documentacion_pendiente: "Documentación pendiente",
   aprobado: "Aprobado",
-  asignado: "Asignado",
+  convertido_a_chofer: "Convertido a chofer",
   rechazado: "Rechazado",
 };
 
@@ -40,10 +40,57 @@ function getRecruitStatusClass(status) {
   return "pending";
 }
 
-function RecruitTableRow({ applicant, isUpdating, onStatusChange,  onViewApplicant }) {
+function formatElapsed(createdAt) {
+  if (!createdAt) return "Sin hora";
+
+  const created = new Date(createdAt);
+  const diffMs = Date.now() - created.getTime();
+
+  if (Number.isNaN(created.getTime()) || diffMs < 0) return "Recién ingresado";
+
+  const minutes = Math.floor(diffMs / 60000);
+  if (minutes < 60) return `${Math.max(minutes, 0)} min`;
+
+  const hours = Math.floor(minutes / 60);
+  if (hours < 24) return `${hours} h`;
+
+  const days = Math.floor(hours / 24);
+  return `${days} d`;
+}
+
+function getFollowup(applicant) {
+  if (applicant.fechaPrimerContacto) {
+    return { label: "Contactado", className: "done" };
+  }
+
+  const created = new Date(applicant.createdAt || 0);
+  const elapsedHours = (Date.now() - created.getTime()) / 3600000;
+
+  if (elapsedHours >= 6) {
+    return {
+      label: `Urgente · ${formatElapsed(applicant.createdAt)}`,
+      className: "critical",
+    };
+  }
+
+  if (elapsedHours >= 2) {
+    return {
+      label: `Sin contacto · ${formatElapsed(applicant.createdAt)}`,
+      className: "warning",
+    };
+  }
+
+  return {
+    label: `Nuevo · ${formatElapsed(applicant.createdAt)}`,
+    className: "new",
+  };
+}
+
+function RecruitTableRow({ applicant, isUpdating, onStatusChange, onViewApplicant }) {
   const [selectedStatus, setSelectedStatus] = useState(applicant.estado || "nuevo");
   const applicantName = getApplicantName(applicant);
   const whatsappUrl = getWhatsAppUrl(applicant);
+  const followup = getFollowup(applicant);
 
   return (
     <tr>
@@ -51,10 +98,16 @@ function RecruitTableRow({ applicant, isUpdating, onStatusChange,  onViewApplica
       <td>{applicant.telefono || applicant.whatsapp || "-"}</td>
       <td>{applicant.comuna || "-"}</td>
       <td>{applicant.tipoVehiculo || "-"}</td>
-      <td>{applicant.operacion || applicant.campaignName || "Sin operación"}</td>
+      <td>{applicant.operacion || "Sin operación"}</td>
       <td>
         <span className={`tag ${getRecruitStatusClass(applicant.estado)}`}>
           {statusLabels[applicant.estado] || applicant.estado || "Nuevo"}
+        </span>
+      </td>
+      <td>{applicant.asignadoA || "Sin asignar"}</td>
+      <td>
+        <span className={`recruit-followup-badge ${followup.className}`}>
+          {followup.label}
         </span>
       </td>
       <td>
@@ -73,12 +126,12 @@ function RecruitTableRow({ applicant, isUpdating, onStatusChange,  onViewApplica
           )}
 
           <button
-  className="recruit-action-btn view"
-onClick={() => onViewApplicant?.(applicant)}
-  type="button"
->
-  Ver ficha
-</button>
+            className="recruit-action-btn view"
+            onClick={() => onViewApplicant?.(applicant)}
+            type="button"
+          >
+            Gestionar
+          </button>
 
           <label className="recruit-status-control">
             <span className="sr-only">Nuevo estado para {applicantName}</span>
@@ -97,22 +150,13 @@ onClick={() => onViewApplicant?.(applicant)}
           </label>
 
           <button
-  className="recruit-action-btn approve"
-  disabled={isUpdating || applicant.estado === "aprobado"}
-  onClick={() => onStatusChange(applicant._id, "aprobado")}
-  type="button"
->
-  {applicant.estado === "aprobado" ? "Aprobado" : "Aprobar"}
-</button>
-
-<button
-  className="recruit-action-btn status"
-  disabled={isUpdating || selectedStatus === applicant.estado}
-  onClick={() => onStatusChange(applicant._id, selectedStatus)}
-  type="button"
->
-  {isUpdating ? "Guardando..." : "Cambiar estado"}
-</button>
+            className="recruit-action-btn status"
+            disabled={isUpdating || selectedStatus === applicant.estado}
+            onClick={() => onStatusChange(applicant._id, selectedStatus)}
+            type="button"
+          >
+            {isUpdating ? "Guardando..." : "Cambiar estado"}
+          </button>
         </div>
       </td>
     </tr>
@@ -131,14 +175,15 @@ function RecruitTable({ applicants, loading, updatingId, onStatusChange, onViewA
             <th>Tipo vehículo</th>
             <th>Operación</th>
             <th>Estado</th>
+            <th>Responsable</th>
+            <th>Seguimiento</th>
             <th>Acciones</th>
-          
           </tr>
         </thead>
         <tbody>
           {applicants.length === 0 ? (
             <tr>
-              <td className="empty-row" colSpan="7">
+              <td className="empty-row" colSpan="9">
                 {loading ? "Cargando postulantes..." : "No hay postulantes registrados."}
               </td>
             </tr>
@@ -147,9 +192,9 @@ function RecruitTable({ applicants, loading, updatingId, onStatusChange, onViewA
               <RecruitTableRow
                 applicant={applicant}
                 isUpdating={updatingId === applicant._id}
-                key={`${applicant._id}-${applicant.estado}`}
+                key={`${applicant._id}-${applicant.estado}-${applicant.fechaPrimerContacto || ""}`}
                 onStatusChange={onStatusChange}
-                 onViewApplicant={onViewApplicant}
+                onViewApplicant={onViewApplicant}
               />
             ))
           )}
