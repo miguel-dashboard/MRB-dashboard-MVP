@@ -34,3 +34,13 @@ export function createRecruitApplicant(applicant) {
     body: JSON.stringify(applicant),
   });
 }
+
+export function updateRecruitApplicant(applicantId, payload) {
+  return requestJson(`${API_BASE}/${applicantId}`, {
+    method: "PUT",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(payload),
+  });
+}

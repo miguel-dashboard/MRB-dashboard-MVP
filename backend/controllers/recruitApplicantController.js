@@ -185,9 +185,28 @@ const updateRecruitApplicantStatus = async (req, res) => {
       });
     }
 
+    const currentApplicant = await RecruitApplicant.findById(req.params.id);
+
+    if (!currentApplicant) {
+      return res.status(404).json({
+        message: "Postulante no encontrado",
+      });
+    }
+
+    const updateData = { estado };
+
+    if (estado === "contactado") {
+      const now = new Date();
+      updateData.fechaUltimoContacto = now;
+
+      if (!currentApplicant.fechaPrimerContacto) {
+        updateData.fechaPrimerContacto = now;
+      }
+    }
+
     const updatedApplicant = await RecruitApplicant.findByIdAndUpdate(
       req.params.id,
-      { estado },
+      updateData,
       {
         new: true,
         runValidators: true,
