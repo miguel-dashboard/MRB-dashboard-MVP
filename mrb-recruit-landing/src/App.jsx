@@ -9,22 +9,12 @@ const operations = [
   {
     name: "Chilexpress",
     detail:
-      "Distribución, reparto urbano y apoyo operacional con foco en cumplimiento y cobertura.",
+      "Captación para operación de última milla y distribución. Los cupos dependen de carga, zona, vehículo, documentación y disponibilidad.",
   },
   {
-    name: "Brightcell",
+    name: "Starken - Hub Las Condes",
     detail:
-      "Servicios logísticos que requieren orden, comunicación y trazabilidad de cada asignación.",
-  },
-  {
-    name: "Viña Concha y Toro",
-    detail:
-      "Apoyo para cargas planificadas, rutas coordinadas y transporte con estándares de cliente.",
-  },
-  {
-    name: "Otros clientes",
-    detail:
-      "Nuevos requerimientos según temporada, zona, tipo de vehículo y disponibilidad operativa.",
+      "Captación prioritaria para el hub Las Condes. Evaluamos vehículo, comuna, experiencia, documentación y disponibilidad para la operación.",
   },
 ]
 
@@ -165,6 +155,48 @@ const initialForm = {
   observacion: "",
 }
 
+const OPERATION_STARKEN = "Starken - Hub Las Condes"
+
+function normalizeLandingOperation(value = "") {
+  const normalized = String(value).trim().toLowerCase()
+
+  if (normalized.includes("starken")) return OPERATION_STARKEN
+  if (normalized.includes("chilexpress")) return "Chilexpress"
+
+  return ""
+}
+
+function normalizeTrafficSource(value = "") {
+  const normalized = String(value).trim().toLowerCase()
+
+  if (normalized.includes("facebook") || normalized.includes("meta")) return "facebook_ads"
+  if (normalized.includes("instagram")) return "instagram_ads"
+  if (normalized.includes("google")) return "google_ads"
+  if (normalized.includes("whatsapp")) return "whatsapp"
+  if (normalized.includes("refer")) return "referido"
+
+  return "otro"
+}
+
+function getLandingTracking() {
+  const params = new URLSearchParams(window.location.search)
+  const utmSource = params.get("utm_source") || ""
+  const utmMedium = params.get("utm_medium") || ""
+  const utmCampaign = params.get("utm_campaign") || ""
+  const utmContent = params.get("utm_content") || ""
+  const operationParam = params.get("operacion") || params.get("operation") || ""
+
+  return {
+    fuente: normalizeTrafficSource(utmSource),
+    campaignName: utmCampaign,
+    utmSource,
+    utmMedium,
+    utmCampaign,
+    utmContent,
+    defaultOperation: normalizeLandingOperation(operationParam),
+  }
+}
+
 function SectionHeading({ eyebrow, title, text, align = "center", tone = "dark" }) {
   return (
     <div className={`section-heading section-heading--${align} section-heading--${tone}`}>
@@ -175,8 +207,11 @@ function SectionHeading({ eyebrow, title, text, align = "center", tone = "dark" 
   )
 }
 
-function RecruitForm({ whatsappUrl }) {
-  const [form, setForm] = useState(initialForm)
+function RecruitForm({ whatsappUrl, tracking }) {
+  const [form, setForm] = useState(() => ({
+    ...initialForm,
+    operacion: tracking.defaultOperation || "",
+  }))
   const [status, setStatus] = useState("idle")
   const [message, setMessage] = useState("")
   const [step, setStep] = useState(1)
@@ -246,6 +281,12 @@ function RecruitForm({ whatsappUrl }) {
           comuna: form.comuna.trim(),
           tipoVehiculo: form.tipoVehiculo,
           operacion: form.operacion,
+          campaignName: tracking.campaignName,
+          fuente: tracking.fuente,
+          utmSource: tracking.utmSource,
+          utmMedium: tracking.utmMedium,
+          utmCampaign: tracking.utmCampaign,
+          utmContent: tracking.utmContent,
           disponibilidad: form.disponibilidad,
           experiencia: form.experiencia.trim(),
           observacion: form.observacion.trim(),
@@ -258,7 +299,10 @@ function RecruitForm({ whatsappUrl }) {
       setMessage(
         "¡Postulación recibida! Revisaremos tu perfil según comuna, vehículo y disponibilidad. Si hay una operación compatible, te contactamos directamente por teléfono o WhatsApp."
       )
-      setForm(initialForm)
+      setForm({
+        ...initialForm,
+        operacion: tracking.defaultOperation || "",
+      })
       setStep(1)
     } catch {
       setStatus("error")
@@ -428,6 +472,8 @@ function RecruitForm({ whatsappUrl }) {
 }
 
 function App() {
+  const tracking = useMemo(() => getLandingTracking(), [])
+
   const whatsappUrl = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(
     WHATSAPP_MESSAGE,
   )}`
@@ -455,10 +501,11 @@ function App() {
         <section className="hero-grid shell">
           <div className="hero-copy">
             <span className="eyebrow">MR&B Servicios Logísticos</span>
-            <h1>¿Tienes camioneta, furgón o camión?</h1>
+            <h1>Estamos incorporando móviles para Chilexpress y Starken</h1>
             <p>
-              Postula a operaciones logísticas activas con MR&B. Revisamos tu comuna,
-              tipo de vehículo y disponibilidad para contactarte si hay compatibilidad.
+              Si tienes camioneta, furgón o camión y quieres trabajar en reparto,
+              postula directamente a MR&B. Hoy tenemos captación activa para
+              Chilexpress y Starken - Hub Las Condes.
             </p>
 
             <div className="hero-actions">
@@ -471,7 +518,7 @@ function App() {
  </div>
 
 <p className="hero-social-proof">
-  ✓ Más de 40 transportistas ya postularon · 3 operaciones activas
+  ✓ Captación activa: Chilexpress · Starken - Hub Las Condes
 </p>
 </div>
           <aside className="hero-panel hero-panel-simple" aria-label="Postulación simple">
@@ -487,9 +534,9 @@ function App() {
             </p>
 
             <ul className="hero-checklist">
-              <li>Vehículos comerciales</li>
-              <li>Operaciones activas</li>
-              <li>Contacto del equipo MR&B</li>
+              <li>Chilexpress</li>
+              <li>Starken - Hub Las Condes</li>
+              <li>Postulación directa a MR&B Recruit</li>
             </ul>
           </aside>
         </section>
@@ -509,7 +556,7 @@ function App() {
   <div className="shell">
     <div className="mobile-operations-strip">
       <strong>Operaciones con captación activa</strong>
-      <p>Chilexpress · Brightcell · Viña Concha y Toro · Otros clientes</p>
+      <p>Chilexpress · Starken - Hub Las Condes</p>
       <span>Postulación sujeta a comuna, vehículo, documentación y disponibilidad operativa.</span>
     </div>
   </div>
@@ -520,8 +567,8 @@ function App() {
     <div className="form-copy">
       <SectionHeading
         eyebrow="Postulación"
-        title="Postula tu vehículo a MR&B Recruit"
-        text="Registra tus datos para evaluación. La postulación no garantiza asignación inmediata; permite iniciar una revisión operacional."
+        title="Postula tu vehículo para Chilexpress o Starken"
+        text="Completa el formulario una sola vez. El equipo MR&B revisará tu vehículo, comuna y disponibilidad para la operación seleccionada."
         align="left"
         tone="light"
       />
@@ -536,7 +583,7 @@ function App() {
       </div>
     </div>
 
-    <RecruitForm whatsappUrl={whatsappUrl} />
+    <RecruitForm whatsappUrl={whatsappUrl} tracking={tracking} />
   </div>
 </section>
 
@@ -582,9 +629,9 @@ function App() {
         <section className="section operations-section" id="operaciones">
           <div className="shell">
             <SectionHeading
-              eyebrow="Operaciones disponibles"
-              title="Clientes y servicios sujetos a demanda operacional"
-              text="Postulación sujeta a comuna, vehículo, documentación y disponibilidad operativa."
+              eyebrow="Captación activa"
+              title="Dos operaciones reales para postular hoy"
+              text="Chilexpress y Starken - Hub Las Condes. Los cupos dependen de demanda, vehículo, documentación, zona y disponibilidad."
               tone="light"
             />
 
