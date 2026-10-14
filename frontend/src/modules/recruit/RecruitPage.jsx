@@ -1,15 +1,37 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import RecruitTable from "./RecruitTable";
-import { getRecruitApplicants, updateRecruitApplicantStatus } from "./recruitApi";
+import {
+  getRecruitApplicants,
+  updateRecruitApplicant,
+  updateRecruitApplicantStatus,
+} from "./recruitApi";
 
-const recruitKpis = [
-  { label: "Total postulantes", status: null },
-  { label: "Nuevos", status: "nuevo" },
-  { label: "En revisión", status: "en_revision" },
-  { label: "Contactados", status: "contactado" },
-  { label: "Aprobados", status: "aprobado" },
-  { label: "Rechazados", status: "rechazado" },
-];
+const terminalStatuses = new Set(["aprobado", "rechazado", "convertido_a_chofer"]);
+
+function toLocalDateTimeInput(value) {
+  if (!value) return "";
+
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return "";
+
+  const pad = (number) => String(number).padStart(2, "0");
+
+  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(
+    date.getDate()
+  )}T${pad(date.getHours())}:${pad(date.getMinutes())}`;
+}
+
+function formatDateTime(value) {
+  if (!value) return "Sin registrar";
+
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return "Sin registrar";
+
+  return date.toLocaleString("es-CL", {
+    dateStyle: "short",
+    timeStyle: "short",
+  });
+}
 
 function RecruitPage() {
   const [applicants, setApplicants] = useState([]);
@@ -18,6 +40,12 @@ function RecruitPage() {
   const [error, setError] = useState("");
   const [operationFilter, setOperationFilter] = useState("todas");
   const [statusFilter, setStatusFilter] = useState("todos");
+  const [selectedApplicant, setSelectedApplicant] = useState(null);
+  const [followupForm, setFollowupForm] = useState({
+    asignadoA: "",
+    proximaAccion: "",
+    fechaProximaAccion: "",
+  });
 
   const loadApplicants = useCallback(async () => {
     setLoading(true);
@@ -38,22 +66,76 @@ function RecruitPage() {
     loadApplicants();
   }, [loadApplicants]);
 
+  function selectApplicant(applicant) {
+    setSelectedApplicant(applicant);
+    setFollowupForm({
+      asignadoA: applicant.asignadoA || "",
+      proximaAccion: applicant.proximaAccion || "",
+      fechaProximaAccion: toLocalDateTimeInput(applicant.fechaProximaAccion),
+    });
+  }
+
+  function replaceApplicant(updatedApplicant) {
+    setApplicants((currentApplicants) =>
+      currentApplicants.map((applicant) =>
+        applicant._id === updatedApplicant._id ? updatedApplicant : applicant
+      )
+    );
+
+    if (selectedApplicant?._id === updatedApplicant._id) {
+      setSelectedApplicant(updatedApplicant);
+      setFollowupForm({
+        asignadoA: updatedApplicant.asignadoA || "",
+        proximaAccion: updatedApplicant.proximaAccion || "",
+        fechaProximaAccion: toLocalDateTimeInput(
+          updatedApplicant.fechaProximaAccion
+        ),
+      });
+    }
+  }
+
   async function handleStatusChange(applicantId, estado) {
     setUpdatingId(applicantId);
     setError("");
 
     try {
       const response = await updateRecruitApplicantStatus(applicantId, estado);
-      setApplicants((currentApplicants) =>
-        currentApplicants.map((applicant) =>
-          applicant._id === applicantId ? response.applicant : applicant
-        )
-      );
+      replaceApplicant(response.applicant);
+      return response.applicant;
+    } catch (requestError) {
+      setError(requestError.message);
+      return null;
+    } finally {
+      setUpdatingId(null);
+    }
+  }
+
+  async function handleSaveFollowup() {
+    if (!selectedApplicant) return;
+
+    setUpdatingId(selectedApplicant._id);
+    setError("");
+
+    try {
+      const response = await updateRecruitApplicant(selectedApplicant._id, {
+        asignadoA: followupForm.asignadoA.trim(),
+        proximaAccion: followupForm.proximaAccion.trim(),
+        fechaProximaAccion: followupForm.fechaProximaAccion
+          ? new Date(followupForm.fechaProximaAccion).toISOString()
+          : null,
+      });
+
+      replaceApplicant(response.applicant);
     } catch (requestError) {
       setError(requestError.message);
     } finally {
       setUpdatingId(null);
     }
+  }
+
+  async function handleMarkContacted() {
+    if (!selectedApplicant) return;
+    await handleStatusChange(selectedApplicant._id, "contactado");
   }
 
   const operationApplicants = useMemo(
@@ -74,13 +156,57 @@ function RecruitPage() {
     [operationApplicants, statusFilter]
   );
 
-  const kpis = recruitKpis.map((kpi) => ({
-    ...kpi,
-    value: kpi.status
-      ? operationApplicants.filter((applicant) => applicant.estado === kpi.status)
-          .length
-      : operationApplicants.length,
-  }));
+  const kpis = useMemo(() => {
+    const now = Date.now();
+
+    const withoutContact = operationApplicants.filter(
+      (applicant) =>
+        !applicant.fechaPrimerContacto &&
+        !terminalStatuses.has(applicant.estado)
+    ).length;
+
+    const urgentWithoutContact = operationApplicants.filter((applicant) => {
+      if (
+        applicant.fechaPrimerContacto ||
+        terminalStatuses.has(applicant.estado) ||
+        !applicant.createdAt
+      ) {
+        return false;
+      }
+
+      return now - new Date(applicant.createdAt).getTime() >= 6 * 60 * 60 * 1000;
+    }).length;
+
+    const overdue = operationApplicants.filter((applicant) => {
+      if (
+        !applicant.fechaProximaAccion ||
+        terminalStatuses.has(applicant.estado)
+      ) {
+        return false;
+      }
+
+      return new Date(applicant.fechaProximaAccion).getTime() < now;
+    }).length;
+
+    return [
+      { label: "Total postulantes", value: operationApplicants.length },
+      {
+        label: "Nuevos",
+        value: operationApplicants.filter(
+          (applicant) => applicant.estado === "nuevo"
+        ).length,
+      },
+      { label: "Sin contactar", value: withoutContact },
+      { label: "Urgentes +6h", value: urgentWithoutContact },
+      { label: "Acciones vencidas", value: overdue },
+      {
+        label: "Aprobados",
+        value: operationApplicants.filter(
+          (applicant) => applicant.estado === "aprobado"
+        ).length,
+      },
+    ];
+  }, [operationApplicants]);
 
   return (
     <section className="panel table-section recruit-section">
@@ -89,7 +215,7 @@ function RecruitPage() {
           <span className="section-kicker">MR&amp;B RECRUIT</span>
           <h3>Postulantes transportistas</h3>
           <p className="recruit-description">
-            Captación y seguimiento inicial de candidatos para la operación logística.
+            Captación y seguimiento para que ningún móvil interesado quede sin gestión.
           </p>
         </div>
 
@@ -134,15 +260,136 @@ function RecruitPage() {
               <option value="interesado">Interesado</option>
               <option value="documentacion_pendiente">Documentación pendiente</option>
               <option value="aprobado">Aprobado</option>
+              <option value="convertido_a_chofer">Convertido a chofer</option>
               <option value="rechazado">Rechazado</option>
             </select>
           </label>
         </div>
 
         <span className="recruit-filter-count">
-          {filteredApplicants.length} postulante{filteredApplicants.length === 1 ? "" : "s"}
+          {filteredApplicants.length} postulante
+          {filteredApplicants.length === 1 ? "" : "s"}
         </span>
       </div>
+
+      {selectedApplicant && (
+        <div className="recruit-followup-card">
+          <div className="recruit-followup-header">
+            <div>
+              <span className="section-kicker">SEGUIMIENTO</span>
+              <h4>
+                {[selectedApplicant.nombre, selectedApplicant.apellido]
+                  .filter(Boolean)
+                  .join(" ") || "Postulante"}
+              </h4>
+              <p>
+                {selectedApplicant.operacion || "Sin operación"} ·{" "}
+                {selectedApplicant.telefono || selectedApplicant.whatsapp || "Sin teléfono"}
+              </p>
+            </div>
+
+            <button
+              type="button"
+              className="recruit-followup-close"
+              onClick={() => setSelectedApplicant(null)}
+            >
+              Cerrar
+            </button>
+          </div>
+
+          <div className="recruit-followup-meta">
+            <div>
+              <span>Ingresó</span>
+              <strong>{formatDateTime(selectedApplicant.createdAt)}</strong>
+            </div>
+            <div>
+              <span>Primer contacto</span>
+              <strong>{formatDateTime(selectedApplicant.fechaPrimerContacto)}</strong>
+            </div>
+            <div>
+              <span>Fuente</span>
+              <strong>{selectedApplicant.fuente || "Sin fuente"}</strong>
+            </div>
+            <div>
+              <span>Campaña</span>
+              <strong>
+                {selectedApplicant.utmCampaign ||
+                  selectedApplicant.campaignName ||
+                  "Sin campaña"}
+              </strong>
+            </div>
+          </div>
+
+          <div className="recruit-followup-form">
+            <label>
+              <span>Responsable</span>
+              <input
+                value={followupForm.asignadoA}
+                onChange={(event) =>
+                  setFollowupForm((current) => ({
+                    ...current,
+                    asignadoA: event.target.value,
+                  }))
+                }
+                placeholder="Ej: Ricardo / Coordinador captación"
+              />
+            </label>
+
+            <label>
+              <span>Próxima acción</span>
+              <input
+                value={followupForm.proximaAccion}
+                onChange={(event) =>
+                  setFollowupForm((current) => ({
+                    ...current,
+                    proximaAccion: event.target.value,
+                  }))
+                }
+                placeholder="Ej: solicitar documentos"
+              />
+            </label>
+
+            <label>
+              <span>Fecha próxima acción</span>
+              <input
+                type="datetime-local"
+                value={followupForm.fechaProximaAccion}
+                onChange={(event) =>
+                  setFollowupForm((current) => ({
+                    ...current,
+                    fechaProximaAccion: event.target.value,
+                  }))
+                }
+              />
+            </label>
+          </div>
+
+          <div className="recruit-followup-actions">
+            <button
+              type="button"
+              className="recruit-action-btn status"
+              disabled={updatingId === selectedApplicant._id}
+              onClick={handleSaveFollowup}
+            >
+              Guardar seguimiento
+            </button>
+
+            <button
+              type="button"
+              className="recruit-action-btn whatsapp"
+              disabled={
+                updatingId === selectedApplicant._id ||
+                Boolean(selectedApplicant.fechaPrimerContacto)
+              }
+              onClick={handleMarkContacted}
+            >
+              {selectedApplicant.fechaPrimerContacto
+                ? "Contacto registrado"
+                : "Marcar contactado ahora"}
+            </button>
+          </div>
+        </div>
+      )}
 
       {error && <p className="recruit-error">{error}</p>}
 
@@ -151,6 +398,7 @@ function RecruitPage() {
         loading={loading}
         updatingId={updatingId}
         onStatusChange={handleStatusChange}
+        onViewApplicant={selectApplicant}
       />
     </section>
   );
