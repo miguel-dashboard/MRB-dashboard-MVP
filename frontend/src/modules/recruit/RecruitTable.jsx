@@ -59,6 +59,18 @@ function formatElapsed(createdAt) {
 }
 
 function getFollowup(applicant) {
+  if (applicant.estado === "aprobado") {
+    return { label: "Aprobado", className: "done" };
+  }
+
+  if (applicant.estado === "convertido_a_chofer") {
+    return { label: "Convertido", className: "done" };
+  }
+
+  if (applicant.estado === "rechazado") {
+    return { label: "Cerrado", className: "closed" };
+  }
+
   if (applicant.fechaPrimerContacto) {
     return { label: "Contactado", className: "done" };
   }
