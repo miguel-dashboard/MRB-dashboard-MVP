@@ -37,6 +37,12 @@ function formatMoney(value) {
   }).format(Number(value || 0));
 }
 
+function formatVoucherDate(value) {
+  // La API devuelve la fecha del voucher en ISO UTC; conservar su día calendario.
+  const [year, month, day] = value.slice(0, 10).split("-");
+  return `${day}/${month}/${year}`;
+}
+
 function StarkenLasCondesPage() {
   const [records, setRecords] = useState([]);
   const [form, setForm] = useState(initialForm);
@@ -438,7 +444,7 @@ function StarkenLasCondesPage() {
               ) : (
                 records.map((record) => (
                   <tr key={record._id}>
-                    <td>{new Date(record.fecha).toLocaleDateString("es-CL")}</td>
+                    <td>{formatVoucherDate(record.fecha)}</td>
                     <td>{record.movil}</td>
                     <td>{record.chofer || "-"}</td>
                     <td>{record.tipoMovimiento === "rendicion" ? "Rendición" : "Retiro"}</td>
