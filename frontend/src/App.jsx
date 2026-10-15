@@ -5,12 +5,14 @@ import PublicRecruitForm from "./modules/recruit/PublicRecruitForm";
 import OperationDaily from "./components/OperationDaily";
 import IncidentsPage from "./components/IncidentsPage";
 import DashboardPage from "./components/DashboardPage";
+import StarkenLasCondesPage from "./components/StarkenLasCondesPage";
 
 const API_BASE = "http://localhost:3001/api";
 
 const menuItems = [
   { id: "dashboard", label: "Dashboard" },
   { id: "operations", label: "Operación diaria" },
+  { id: "starken-las-condes", label: "Starken Las Condes" },
   { id: "deliveries", label: "Entregas" },
   { id: "drivers", label: "Choferes" },
   { id: "vehicles", label: "Vehículos" },
@@ -774,6 +776,7 @@ function App() {
 
         {activeView === "dashboard" && <DashboardPage backendOnline={backendOnline} />}
         {activeView === "operations" && <OperationDaily />}
+        {activeView === "starken-las-condes" && <StarkenLasCondesPage />}
         {activeView === "deliveries" &&
           renderSimpleView("Entregas", deliveries, "deliveries")}
         {activeView === "drivers" &&

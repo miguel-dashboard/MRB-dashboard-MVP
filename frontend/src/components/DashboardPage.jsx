@@ -129,6 +129,67 @@ function DashboardPage({ backendOnline }) {
         ))}
       </section>
 
+
+      <section className="panel section-card starken-dashboard-card">
+        <div className="block-header">
+          <div>
+            <span className="section-kicker">STARKEN · HUB LAS CONDES</span>
+            <h3>Producción mensual de tus móviles</h3>
+          </div>
+        </div>
+
+        <div className="starken-dashboard-kpis">
+          <div>
+            <span>Entregadas</span>
+            <strong>{summary?.starkenLasCondes?.delivered ?? 0}</strong>
+          </div>
+          <div>
+            <span>Devoluciones</span>
+            <strong>{summary?.starkenLasCondes?.returns ?? 0}</strong>
+          </div>
+          <div>
+            <span>Efectividad</span>
+            <strong>{summary?.starkenLasCondes?.effectiveness ?? 0}%</strong>
+          </div>
+          <div>
+            <span>Retiros</span>
+            <strong>{summary?.starkenLasCondes?.pickups ?? 0}</strong>
+          </div>
+          <div>
+            <span>Encargos retiro</span>
+            <strong>{summary?.starkenLasCondes?.pickupItems ?? 0}</strong>
+          </div>
+          <div>
+            <span>Extraviados</span>
+            <strong>{summary?.starkenLasCondes?.lost ?? 0}</strong>
+          </div>
+        </div>
+
+        {(summary?.starkenLasCondes?.byMobile || []).length ? (
+          <div className="starken-dashboard-mobiles">
+            {summary.starkenLasCondes.byMobile.map((item) => (
+              <div className="dashboard-operation-row" key={item.movil}>
+                <div>
+                  <strong>{item.movil}</strong>
+                  <p>
+                    {item.entregadas} entregadas · {item.devoluciones} devoluciones ·{" "}
+                    {item.retiros} retiros
+                  </p>
+                </div>
+                <div className="dashboard-operation-values">
+                  <span>{item.efectividad}%</span>
+                  <small>{item.encargosRetiro} encargos retirados</small>
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <p className="empty-text">
+            Aún no hay vouchers registrados para Starken Las Condes este mes.
+          </p>
+        )}
+      </section>
+
       <section className="dashboard-business-grid">
         <div className="panel section-card">
           <div className="block-header">

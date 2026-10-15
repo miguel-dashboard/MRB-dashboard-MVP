@@ -1894,3 +1894,161 @@ recruit-kpi-grid {
   background: rgba(170, 180, 205, 0.08);
   color: var(--text-soft);
 }
+
+
+/* Starken Hub Las Condes */
+.starken-module {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.starken-month-filter {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  color: var(--text-soft);
+  font-size: 0.74rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.starken-month-filter input {
+  min-height: 38px;
+  padding: 0 10px;
+  border: 1px solid rgba(121, 151, 231, 0.16);
+  border-radius: 10px;
+  background: #0b1530;
+  color: var(--text);
+}
+
+.starken-kpis {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+  margin-bottom: 16px;
+}
+
+.starken-kpis > div,
+.starken-dashboard-kpis > div {
+  padding: 12px;
+  border: 1px solid rgba(122, 148, 215, 0.10);
+  border-radius: 13px;
+  background: rgba(255, 255, 255, 0.025);
+}
+
+.starken-kpis span,
+.starken-dashboard-kpis span {
+  display: block;
+  margin-bottom: 5px;
+  color: var(--text-soft);
+  font-size: 0.72rem;
+}
+
+.starken-kpis strong,
+.starken-dashboard-kpis strong {
+  font-size: 1.22rem;
+}
+
+.starken-form {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.starken-form label {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  color: var(--text-soft);
+  font-size: 0.78rem;
+  font-weight: 700;
+}
+
+.starken-form input,
+.starken-form select {
+  min-height: 40px;
+  padding: 0 10px;
+  border: 1px solid rgba(121, 151, 231, 0.16);
+  border-radius: 10px;
+  outline: none;
+  background: #0b1530;
+  color: var(--text);
+}
+
+.starken-form select option {
+  color: #111827;
+}
+
+.starken-wide {
+  grid-column: span 3;
+}
+
+.starken-submit {
+  min-height: 40px;
+  align-self: end;
+  border: 1px solid rgba(87, 215, 163, 0.20);
+  border-radius: 10px;
+  background: rgba(87, 215, 163, 0.14);
+  color: #b6ffd8;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.starken-delete {
+  min-height: 30px;
+  padding: 0 9px;
+  border: 1px solid rgba(255, 127, 150, 0.18);
+  border-radius: 9px;
+  background: rgba(255, 127, 150, 0.08);
+  color: #ffd0d8;
+  font-size: 0.74rem;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.starken-dashboard-card {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.starken-dashboard-kpis {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.starken-dashboard-mobiles {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+@media (max-width: 1100px) {
+  .starken-kpis,
+  .starken-dashboard-kpis {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .starken-form {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .starken-wide {
+    grid-column: span 2;
+  }
+}
+
+@media (max-width: 640px) {
+  .starken-kpis,
+  .starken-dashboard-kpis,
+  .starken-form {
+    grid-template-columns: 1fr;
+  }
+
+  .starken-wide {
+    grid-column: span 1;
+  }
+}
