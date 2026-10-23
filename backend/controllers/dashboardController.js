@@ -4,6 +4,7 @@ const Vehicle = require("../models/Vehicle");
 const OperationDay = require("../models/OperationDay");
 const Incident = require("../models/Incident");
 const RecruitApplicant = require("../models/RecruitApplicant");
+const StarkenHubRecord = require("../models/StarkenHubRecord");
 
 const dateKey = (value) => {
   if (!value) return "";
@@ -33,6 +34,10 @@ const waitMinutes = (start, end) => {
 
 const getDashboardSummary = async (req, res) => {
   try {
+    const now = new Date();
+    const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+    const monthEnd = new Date(now.getFullYear(), now.getMonth() + 1, 1);
+
     const [
       deliveries,
       drivers,
@@ -40,6 +45,7 @@ const getDashboardSummary = async (req, res) => {
       operationDays,
       incidents,
       applicants,
+      starkenRecords,
     ] = await Promise.all([
       Delivery.find().lean(),
       Driver.find().lean(),
@@ -47,6 +53,11 @@ const getDashboardSummary = async (req, res) => {
       OperationDay.find().sort({ fecha: -1, createdAt: -1 }).lean(),
       Incident.find().sort({ fecha: -1, createdAt: -1 }).lean(),
       RecruitApplicant.find().sort({ createdAt: -1 }).lean(),
+      StarkenHubRecord.find({
+        fecha: { $gte: monthStart, $lt: monthEnd },
+      })
+        .sort({ fecha: -1, createdAt: -1 })
+        .lean(),
     ]);
 
     const today = new Date().toLocaleDateString("sv-SE");
@@ -139,6 +150,68 @@ const getDashboardSummary = async (req, res) => {
       recruitByOperationMap[key] = (recruitByOperationMap[key] || 0) + 1;
     });
 
+    const starkenRenditions = starkenRecords.filter(
+      (item) => item.tipoMovimiento === "rendicion"
+    );
+    const starkenPickups = starkenRecords.filter(
+      (item) => item.tipoMovimiento === "retiro"
+    );
+    const starkenDelivered = starkenRenditions.reduce(
+      (sum, item) => sum + Number(item.entregadas || 0),
+      0
+    );
+    const starkenReturns = starkenRenditions.reduce(
+      (sum, item) => sum + Number(item.devoluciones || 0),
+      0
+    );
+    const starkenPickupItems = starkenPickups.reduce(
+      (sum, item) => sum + Number(item.encargosRetiro || 0),
+      0
+    );
+    const starkenLost = starkenRenditions.reduce(
+      (sum, item) => sum + Number(item.extraviados || 0),
+      0
+    );
+    const starkenMoney = starkenRenditions.reduce(
+      (sum, item) => sum + Number(item.dineroRendir || 0),
+      0
+    );
+    const starkenByMobileMap = {};
+
+    starkenRecords.forEach((item) => {
+      const key = item.movil || "Sin móvil";
+
+      if (!starkenByMobileMap[key]) {
+        starkenByMobileMap[key] = {
+          movil: key,
+          entregadas: 0,
+          devoluciones: 0,
+          retiros: 0,
+          encargosRetiro: 0,
+        };
+      }
+
+      if (item.tipoMovimiento === "rendicion") {
+        starkenByMobileMap[key].entregadas += Number(item.entregadas || 0);
+        starkenByMobileMap[key].devoluciones += Number(item.devoluciones || 0);
+      } else {
+        starkenByMobileMap[key].retiros += 1;
+        starkenByMobileMap[key].encargosRetiro += Number(item.encargosRetiro || 0);
+      }
+    });
+
+    const starkenByMobile = Object.values(starkenByMobileMap)
+      .map((item) => ({
+        ...item,
+        efectividad:
+          item.entregadas + item.devoluciones > 0
+            ? Math.round(
+                (item.entregadas / (item.entregadas + item.devoluciones)) * 1000
+              ) / 10
+            : 0,
+      }))
+      .sort((a, b) => b.entregadas - a.entregadas);
+
     const legacyTodayDeliveries = deliveries.filter(
       (item) => dateKey(item.fecha || item.createdAt) === today
     ).length;
@@ -172,6 +245,24 @@ const getDashboardSummary = async (req, res) => {
         impactMinutes: incidentImpactMinutes,
         packagesAffected: incidentPackages,
         recent: incidents.slice(0, 5),
+      },
+      starkenLasCondes: {
+        month: now.toLocaleDateString("sv-SE").slice(0, 7),
+        records: starkenRecords.length,
+        renditions: starkenRenditions.length,
+        pickups: starkenPickups.length,
+        delivered: starkenDelivered,
+        returns: starkenReturns,
+        pickupItems: starkenPickupItems,
+        lost: starkenLost,
+        moneyToRender: starkenMoney,
+        effectiveness:
+          starkenDelivered + starkenReturns > 0
+            ? Math.round(
+                (starkenDelivered / (starkenDelivered + starkenReturns)) * 1000
+              ) / 10
+            : 0,
+        byMobile: starkenByMobile,
       },
       recruit: {
         total: applicants.length,
