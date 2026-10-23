@@ -13,6 +13,7 @@ const recruitApplicantRoutes = require("./models/routes/recruitApplicantRoutes")
 const operationDayRoutes = require("./models/routes/operationDayRoutes");
 const incidentRoutes = require("./models/routes/incidentRoutes");
 const starkenHubRoutes = require("./models/routes/starkenHubRoutes");
+const smartDispatchRoutes = require("./models/routes/smartDispatchRoutes");
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -37,6 +38,7 @@ app.use("/api/recruit/applicants", recruitApplicantRoutes);
 app.use("/api/operation-days", operationDayRoutes);
 app.use("/api/incidents", incidentRoutes);
 app.use("/api/starken-las-condes", starkenHubRoutes);
+app.use("/api/smart-dispatch", smartDispatchRoutes);
 
 if (require.main === module) {
 mongoose

@@ -6,6 +6,7 @@ import OperationDaily from "./components/OperationDaily";
 import IncidentsPage from "./components/IncidentsPage";
 import DashboardPage from "./components/DashboardPage";
 import StarkenLasCondesPage from "./components/StarkenLasCondesPage";
+import SmartDispatchPage from "./modules/smart-dispatch/SmartDispatchPage";
 
 const API_BASE = "http://localhost:3001/api";
 
@@ -13,6 +14,7 @@ const menuItems = [
   { id: "dashboard", label: "Dashboard" },
   { id: "operations", label: "Operación diaria" },
   { id: "starken-las-condes", label: "Starken Las Condes" },
+  { id: "smart-dispatch", label: "Smart Dispatch" },
   { id: "deliveries", label: "Entregas" },
   { id: "drivers", label: "Choferes" },
   { id: "vehicles", label: "Vehículos" },
@@ -725,7 +727,7 @@ function App() {
   );
 
   return (
-    <div className="app-shell">
+    <div className={`app-shell${activeView === "smart-dispatch" ? " smart-dispatch-shell" : ""}`}>
       <aside className="sidebar">
         <div className="sidebar-top">
           <div className="brand-mark">MR&amp;B</div>
@@ -777,6 +779,7 @@ function App() {
         {activeView === "dashboard" && <DashboardPage backendOnline={backendOnline} />}
         {activeView === "operations" && <OperationDaily />}
         {activeView === "starken-las-condes" && <StarkenLasCondesPage />}
+        {activeView === "smart-dispatch" && <SmartDispatchPage />}
         {activeView === "deliveries" &&
           renderSimpleView("Entregas", deliveries, "deliveries")}
         {activeView === "drivers" &&

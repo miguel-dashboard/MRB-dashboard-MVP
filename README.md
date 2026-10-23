@@ -2,6 +2,8 @@
 
 Dashboard logístico MVP desarrollado para MR&B.
 
+Smart Dispatch V1: [alcance, configuración y pruebas locales](docs/SMART-DISPATCH-V1.md).
+
 ## Descripción
 Este proyecto es un panel de control logístico orientado a la gestión de entregas, visualización de datos operativos y administración básica de registros.
 
