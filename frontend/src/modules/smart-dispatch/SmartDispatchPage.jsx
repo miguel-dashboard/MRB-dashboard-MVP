@@ -9,7 +9,7 @@ const KPI_FIELDS = [
   ["direccionesOk", "Direcciones OK", "OF con dirección revisada manualmente."],
   ["porRevisar", "Por revisar", "OF con dirección pendiente de revisión."],
   ["paquetesEscaneados", "Paquetes escaneados", "Bultos individuales confirmados."],
-  ["faltantes", "Faltantes (OF)", "OF que aún no tienen todos sus bultos confirmados, incluidas las que faltan por registrar."],
+  ["faltantes", "Pendientes de carga (OF)", "OF que todavía no tienen todos sus bultos confirmados, incluidas las que aún faltan por registrar."],
   ["duplicados", "Duplicados", "Intentos repetidos de registrar una OF/código o confirmar el mismo bulto."],
 ];
 const LOAD_LABELS = { pendiente: "Pendiente", parcial: "Parcial", escaneado: "Escaneado" };
@@ -173,7 +173,7 @@ export default function SmartDispatchPage() {
           <span><strong>{day.kpis.ofEscaneadas}</strong> OF con carga completa</span>
           {day.kpis.ofExcedentes > 0 && <span className="sd-extra"><strong>{day.kpis.ofExcedentes}</strong> OF sobre la cantidad esperada</span>}
         </div>
-        <p className="sd-help">Faltantes se mide en OF: la mayor cantidad entre esperadas y digitalizadas, menos las OF con carga completa. Los bultos se cuentan por separado.</p>
+        <p className="sd-help">Pendientes de carga se mide en OF: considera todas las OF esperadas que todavía no tienen su carga completa. Las OF por digitalizar y los bultos pendientes se muestran por separado.</p>
 
         <div className="sd-work-grid">
           <section className="sd-panel" ref={orderFormPanel}><OrderForm key={`${day._id}-${editingOrder?._id || "new"}-${formVersion}`} initial={editingOrder} disabled={busy || showCreate || editHeader} onSave={saveOrder} onCancel={() => setEditingOrder(null)} /></section>
