@@ -43,6 +43,7 @@ function RecruitPage() {
   const [selectedApplicant, setSelectedApplicant] = useState(null);
   const [followupForm, setFollowupForm] = useState({
     asignadoA: "",
+    prioridad: "media",
     proximaAccion: "",
     fechaProximaAccion: "",
   });
@@ -70,6 +71,7 @@ function RecruitPage() {
     setSelectedApplicant(applicant);
     setFollowupForm({
       asignadoA: applicant.asignadoA || "",
+      prioridad: applicant.prioridad || "media",
       proximaAccion: applicant.proximaAccion || "",
       fechaProximaAccion: toLocalDateTimeInput(applicant.fechaProximaAccion),
     });
@@ -86,6 +88,7 @@ function RecruitPage() {
       setSelectedApplicant(updatedApplicant);
       setFollowupForm({
         asignadoA: updatedApplicant.asignadoA || "",
+        prioridad: updatedApplicant.prioridad || "media",
         proximaAccion: updatedApplicant.proximaAccion || "",
         fechaProximaAccion: toLocalDateTimeInput(
           updatedApplicant.fechaProximaAccion
@@ -119,6 +122,7 @@ function RecruitPage() {
     try {
       const response = await updateRecruitApplicant(selectedApplicant._id, {
         asignadoA: followupForm.asignadoA.trim(),
+        prioridad: followupForm.prioridad,
         proximaAccion: followupForm.proximaAccion.trim(),
         fechaProximaAccion: followupForm.fechaProximaAccion
           ? new Date(followupForm.fechaProximaAccion).toISOString()
@@ -165,16 +169,18 @@ function RecruitPage() {
         !terminalStatuses.has(applicant.estado)
     ).length;
 
-    const urgentWithoutContact = operationApplicants.filter((applicant) => {
+    const dueSoon = operationApplicants.filter((applicant) => {
       if (
-        applicant.fechaPrimerContacto ||
-        terminalStatuses.has(applicant.estado) ||
-        !applicant.createdAt
+        !applicant.fechaProximaAccion ||
+        terminalStatuses.has(applicant.estado)
       ) {
         return false;
       }
 
-      return now - new Date(applicant.createdAt).getTime() >= 6 * 60 * 60 * 1000;
+      const dueAt = new Date(applicant.fechaProximaAccion).getTime();
+      const remaining = dueAt - now;
+
+      return remaining >= 0 && remaining <= 2 * 60 * 60 * 1000;
     }).length;
 
     const overdue = operationApplicants.filter((applicant) => {
@@ -197,7 +203,7 @@ function RecruitPage() {
         ).length,
       },
       { label: "Sin contactar", value: withoutContact },
-      { label: "Urgentes +6h", value: urgentWithoutContact },
+      { label: "Por vencer ≤2h", value: dueSoon },
       { label: "Acciones vencidas", value: overdue },
       {
         label: "Aprobados",
@@ -333,6 +339,23 @@ function RecruitPage() {
                 }
                 placeholder="Ej: Ricardo / Coordinador captación"
               />
+            </label>
+
+            <label>
+              <span>Prioridad</span>
+              <select
+                value={followupForm.prioridad}
+                onChange={(event) =>
+                  setFollowupForm((current) => ({
+                    ...current,
+                    prioridad: event.target.value,
+                  }))
+                }
+              >
+                <option value="baja">Baja</option>
+                <option value="media">Media</option>
+                <option value="alta">Alta</option>
+              </select>
             </label>
 
             <label>
