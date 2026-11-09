@@ -6,7 +6,12 @@ import {
   updateRecruitApplicantStatus,
 } from "./recruitApi";
 
-const terminalStatuses = new Set(["aprobado", "rechazado", "convertido_a_chofer"]);
+const terminalStatuses = new Set(["rechazado", "convertido_a_chofer"]);
+const validPriorities = new Set(["baja", "media", "alta"]);
+
+function normalizePriority(value) {
+  return validPriorities.has(value) ? value : "media";
+}
 
 function toLocalDateTimeInput(value) {
   if (!value) return "";
@@ -71,7 +76,7 @@ function RecruitPage() {
     setSelectedApplicant(applicant);
     setFollowupForm({
       asignadoA: applicant.asignadoA || "",
-      prioridad: applicant.prioridad || "media",
+      prioridad: normalizePriority(applicant.prioridad),
       proximaAccion: applicant.proximaAccion || "",
       fechaProximaAccion: toLocalDateTimeInput(applicant.fechaProximaAccion),
     });
@@ -88,7 +93,7 @@ function RecruitPage() {
       setSelectedApplicant(updatedApplicant);
       setFollowupForm({
         asignadoA: updatedApplicant.asignadoA || "",
-        prioridad: updatedApplicant.prioridad || "media",
+        prioridad: normalizePriority(updatedApplicant.prioridad),
         proximaAccion: updatedApplicant.proximaAccion || "",
         fechaProximaAccion: toLocalDateTimeInput(
           updatedApplicant.fechaProximaAccion
@@ -353,7 +358,7 @@ function RecruitPage() {
                 }
               >
                 <option value="baja">Baja</option>
-                <option value="media">Media</option>
+                <option value="media">Normal</option>
                 <option value="alta">Alta</option>
               </select>
             </label>
