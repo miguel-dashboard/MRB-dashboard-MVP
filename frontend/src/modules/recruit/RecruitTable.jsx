@@ -24,7 +24,7 @@ const statusLabels = {
 
 const priorityLabels = {
   alta: "Alta",
-  media: "Media",
+  media: "Normal",
   baja: "Baja",
 };
 
@@ -69,10 +69,6 @@ function formatDuration(ms) {
 }
 
 function getFollowup(applicant) {
-  if (applicant.estado === "aprobado") {
-    return { label: "Aprobado", className: "done" };
-  }
-
   if (applicant.estado === "convertido_a_chofer") {
     return { label: "Convertido", className: "done" };
   }
@@ -135,7 +131,7 @@ function RecruitTableRow({ applicant, isUpdating, onStatusChange, onViewApplican
       </td>
       <td>
         <span className={`recruit-followup-badge ${getPriorityClass(applicant.prioridad)}`}>
-          {priorityLabels[applicant.prioridad] || "Media"}
+          {priorityLabels[applicant.prioridad] || "Normal"}
         </span>
       </td>
       <td>{applicant.asignadoA || "Sin asignar"}</td>
