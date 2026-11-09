@@ -7,14 +7,14 @@ const WHATSAPP_MESSAGE =
   "Hola, quiero postular con mi vehículo a operaciones disponibles de MR&B Recruit. ¿Me pueden orientar?"
 const operations = [
   {
-    name: "Chilexpress",
-    detail:
-      "Captación para operación de última milla y distribución. Los cupos dependen de carga, zona, vehículo, documentación y disponibilidad.",
-  },
-  {
     name: "Starken - Hub Las Condes",
     detail:
-      "Captación prioritaria para el hub Las Condes. Evaluamos vehículo, comuna, experiencia, documentación y disponibilidad para la operación.",
+      "Captación prioritaria para Hub Las Condes. Buscamos incorporar 10 móviles; la activación depende de vehículo, comuna, documentación y disponibilidad operacional.",
+  },
+  {
+    name: "Chilexpress",
+    detail:
+      "También recibimos postulaciones para operación de última milla y distribución, sujetas a carga, zona, vehículo, documentación y disponibilidad.",
   },
 ]
 
@@ -185,6 +185,7 @@ function getLandingTracking() {
   const utmCampaign = params.get("utm_campaign") || ""
   const utmContent = params.get("utm_content") || ""
   const operationParam = params.get("operacion") || params.get("operation") || ""
+  const operationHint = [operationParam, utmCampaign, utmContent].filter(Boolean).join(" ")
 
   return {
     fuente: normalizeTrafficSource(utmSource),
@@ -193,7 +194,7 @@ function getLandingTracking() {
     utmMedium,
     utmCampaign,
     utmContent,
-    defaultOperation: normalizeLandingOperation(operationParam),
+    defaultOperation: normalizeLandingOperation(operationHint) || OPERATION_STARKEN,
   }
 }
 
@@ -231,8 +232,7 @@ function RecruitForm({ whatsappUrl, tracking }) {
       form.comuna.trim() &&
       form.tipoVehiculo &&
       form.operacion &&
-      form.disponibilidad &&
-      form.experiencia.trim(),
+      form.disponibilidad,
     [form],
   )
 
@@ -436,14 +436,13 @@ function RecruitForm({ whatsappUrl, tracking }) {
         </div>
 
         <label>
-          <span>Experiencia logística *</span>
+          <span>Experiencia logística (opcional)</span>
           <textarea
             name="experiencia"
             value={form.experiencia}
             onChange={updateField}
-            placeholder="Ej: 2 años en reparto urbano, última milla, rutas dedicadas o transporte de carga."
-            rows="4"
-            required
+            placeholder="Ej: reparto urbano, última milla, rutas dedicadas o transporte de carga."
+            rows="3"
           />
         </label>
 
@@ -501,16 +500,16 @@ function App() {
         <section className="hero-grid shell">
           <div className="hero-copy">
             <span className="eyebrow">MR&B Servicios Logísticos</span>
-            <h1>Estamos incorporando móviles para Chilexpress y Starken</h1>
+            <h1>Buscamos 10 móviles para Starken Hub Las Condes</h1>
             <p>
-              Si tienes camioneta, furgón o camión y quieres trabajar en reparto,
-              postula directamente a MR&B. Hoy tenemos captación activa para
-              Chilexpress y Starken - Hub Las Condes.
+              ¿Tienes camioneta, furgón o camión? Postula con MR&B para reparto.
+              Starken Hub Las Condes es nuestra prioridad actual; también recibimos
+              postulaciones para Chilexpress.
             </p>
 
             <div className="hero-actions">
   <a className="button button-primary" href="#postula">
-    Postular ahora
+    Postular mi vehículo
   </a>
   <a className="button button-secondary" href="#operaciones">
     Ver operaciones
@@ -518,7 +517,7 @@ function App() {
  </div>
 
 <p className="hero-social-proof">
-  ✓ Captación activa: Chilexpress · Starken - Hub Las Condes
+  Postulación sujeta a evaluación. Sin cupo automático.
 </p>
 </div>
           <aside className="hero-panel hero-panel-simple" aria-label="Postulación simple">
@@ -527,15 +526,15 @@ function App() {
               Captación disponible
             </div>
 
-            <h2>Postulación simple para transportistas</h2>
+            <h2>Postulación rápida para transportistas</h2>
             <p>
-              Completa tus datos y revisaremos compatibilidad según comuna,
+              Déjanos tus datos y revisaremos compatibilidad según comuna,
               vehículo y disponibilidad.
             </p>
 
             <ul className="hero-checklist">
-              <li>Chilexpress</li>
-              <li>Starken - Hub Las Condes</li>
+              <li>Starken - Hub Las Condes · prioridad actual</li>
+              <li>Chilexpress · captación activa</li>
               <li>Postulación directa a MR&B Recruit</li>
             </ul>
           </aside>
@@ -556,7 +555,7 @@ function App() {
   <div className="shell">
     <div className="mobile-operations-strip">
       <strong>Operaciones con captación activa</strong>
-      <p>Chilexpress · Starken - Hub Las Condes</p>
+      <p>Starken - Hub Las Condes · Chilexpress</p>
       <span>Postulación sujeta a comuna, vehículo, documentación y disponibilidad operativa.</span>
     </div>
   </div>
@@ -567,8 +566,8 @@ function App() {
     <div className="form-copy">
       <SectionHeading
         eyebrow="Postulación"
-        title="Postula tu vehículo para Chilexpress o Starken"
-        text="Completa el formulario una sola vez. El equipo MR&B revisará tu vehículo, comuna y disponibilidad para la operación seleccionada."
+        title="Postula tu vehículo"
+        text="Déjanos tus datos para evaluar tu incorporación a Starken Hub Las Condes o Chilexpress. Puedes elegir la operación en el formulario."
         align="left"
         tone="light"
       />
@@ -630,8 +629,8 @@ function App() {
           <div className="shell">
             <SectionHeading
               eyebrow="Captación activa"
-              title="Dos operaciones reales para postular hoy"
-              text="Chilexpress y Starken - Hub Las Condes. Los cupos dependen de demanda, vehículo, documentación, zona y disponibilidad."
+              title="Operaciones activas para postular hoy"
+              text="Starken Hub Las Condes es la prioridad actual. También recibimos postulaciones para Chilexpress. La activación depende de demanda, vehículo, documentación, zona y disponibilidad."
               tone="light"
             />
 
