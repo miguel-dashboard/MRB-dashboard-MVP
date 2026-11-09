@@ -1,7 +1,11 @@
 const mongoose = require("mongoose");
 const normalizePhone = require("../utils/normalizePhone");
 const RecruitApplicant = require("../models/RecruitApplicant");
-const { buildRecruitAutomation } = require("../services/recruitAutomationService");
+const {
+  buildRecruitAutomation,
+  buildStatusAutomation,
+  isAutomatedAction,
+} = require("../services/recruitAutomationService");
 
 const { applicantStatuses } = RecruitApplicant;
 
@@ -201,18 +205,28 @@ const updateRecruitApplicantStatus = async (req, res) => {
     }
 
     const updateData = { estado };
+    const now = new Date();
 
     if (estado === "contactado") {
-      const now = new Date();
       updateData.fechaUltimoContacto = now;
 
       if (!currentApplicant.fechaPrimerContacto) {
         updateData.fechaPrimerContacto = now;
       }
+    }
 
-      if (currentApplicant.proximaAccion === "Contactar postulante") {
-        updateData.proximaAccion = "";
-        updateData.fechaProximaAccion = null;
+    const automation = buildStatusAutomation(estado, now);
+    const isTerminalStatus =
+      estado === "convertido_a_chofer" || estado === "rechazado";
+
+    if (automation) {
+      const canReplaceFollowup =
+        !currentApplicant.proximaAccion ||
+        isAutomatedAction(currentApplicant.proximaAccion);
+
+      if (isTerminalStatus || canReplaceFollowup) {
+        updateData.proximaAccion = automation.proximaAccion;
+        updateData.fechaProximaAccion = automation.fechaProximaAccion;
       }
     }
 
