@@ -1,6 +1,7 @@
 const mongoose = require("mongoose");
 const normalizePhone = require("../utils/normalizePhone");
 const RecruitApplicant = require("../models/RecruitApplicant");
+const { buildRecruitAutomation } = require("../services/recruitAutomationService");
 
 const { applicantStatuses } = RecruitApplicant;
 
@@ -88,8 +89,10 @@ const createRecruitApplicant = async (req, res) => {
       });
     }
 
+    const automation = buildRecruitAutomation(req.body?.operacion);
+
     // Solo datos de postulación usados por la landing y el formulario del dashboard.
-    // Los campos de gestión no se copian: sus valores iniciales pertenecen al modelo.
+    // Los campos de gestión enviados por el cliente se ignoran y se inicializan con reglas internas.
     const applicantData = {
       nombre: req.body.nombre,
       apellido: req.body.apellido,
@@ -114,6 +117,10 @@ const createRecruitApplicant = async (req, res) => {
       // Comentario del postulante en PublicRecruitForm; no son notas internas.
       notas: req.body.notas,
       fuente: req.body.fuente,
+      asignadoA: automation.asignadoA,
+      prioridad: automation.prioridad,
+      proximaAccion: automation.proximaAccion,
+      fechaProximaAccion: automation.fechaProximaAccion,
     };
 
     const newApplicant = new RecruitApplicant(applicantData);
@@ -201,6 +208,11 @@ const updateRecruitApplicantStatus = async (req, res) => {
 
       if (!currentApplicant.fechaPrimerContacto) {
         updateData.fechaPrimerContacto = now;
+      }
+
+      if (currentApplicant.proximaAccion === "Contactar postulante") {
+        updateData.proximaAccion = "";
+        updateData.fechaProximaAccion = null;
       }
     }
 
