@@ -30,13 +30,17 @@ const landing = {
   experiencia: "Reparto urbano", observacion: "Disponible en la mañana",
 };
 
-test("conserva el payload de la landing y normaliza el teléfono", async (t) => {
+test("conserva el payload de la landing, normaliza teléfono y automatiza Chilexpress", async (t) => {
   const { statusCode, saved } = await submit(t, landing);
   assert.equal(statusCode, 201);
   for (const [key, value] of Object.entries(landing)) {
     assert.equal(saved[key], key === "telefono" ? "+56912345678" : value);
   }
   assert.equal(saved.fuente, "manual");
+  assert.equal(saved.asignadoA, "Coordinación Chilexpress");
+  assert.equal(saved.prioridad, "media");
+  assert.equal(saved.proximaAccion, "Contactar postulante");
+  assert.ok(saved.fechaProximaAccion instanceof Date);
 });
 
 test("conserva los datos del formulario actual del dashboard", async (t) => {
@@ -71,11 +75,22 @@ test("ignora campos internos, desconocidos y otros atributos del modelo", async 
   const { statusCode, saved } = await submit(t, { ...landing, ...injected });
   assert.equal(statusCode, 201);
   assert.notEqual(String(saved._id), injected._id);
-  for (const key of Object.keys(injected).filter((key) => key !== "_id")) {
+  const generatedFields = new Set([
+    "asignadoA",
+    "prioridad",
+    "proximaAccion",
+    "fechaProximaAccion",
+  ]);
+  for (const key of Object.keys(injected).filter(
+    (key) => key !== "_id" && !generatedFields.has(key)
+  )) {
     assert.deepEqual(saved[key], baseline[key], key);
   }
   assert.equal(saved.estado, "nuevo");
+  assert.equal(saved.asignadoA, "Coordinación Chilexpress");
   assert.equal(saved.prioridad, "media");
+  assert.equal(saved.proximaAccion, "Contactar postulante");
+  assert.ok(saved.fechaProximaAccion instanceof Date);
 });
 
 test("mantiene las validaciones de teléfono y fuente del modelo", async (t) => {

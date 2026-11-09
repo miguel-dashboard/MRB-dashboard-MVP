@@ -22,6 +22,12 @@ const statusLabels = {
   rechazado: "Rechazado",
 };
 
+const priorityLabels = {
+  alta: "Alta",
+  media: "Media",
+  baja: "Baja",
+};
+
 function getApplicantName(applicant) {
   return [applicant.nombre, applicant.apellido].filter(Boolean).join(" ") || "Sin nombre";
 }
@@ -40,19 +46,23 @@ function getRecruitStatusClass(status) {
   return "pending";
 }
 
-function formatElapsed(createdAt) {
-  if (!createdAt) return "Sin hora";
+function getPriorityClass(priority) {
+  if (priority === "alta") return "critical";
+  if (priority === "baja") return "done";
+  return "warning";
+}
 
-  const created = new Date(createdAt);
-  const diffMs = Date.now() - created.getTime();
+function formatDuration(ms) {
+  const totalMinutes = Math.max(Math.round(Math.abs(ms) / 60000), 1);
 
-  if (Number.isNaN(created.getTime()) || diffMs < 0) return "Recién ingresado";
+  if (totalMinutes < 60) return `${totalMinutes} min`;
 
-  const minutes = Math.floor(diffMs / 60000);
-  if (minutes < 60) return `${Math.max(minutes, 0)} min`;
+  const hours = Math.floor(totalMinutes / 60);
+  const minutes = totalMinutes % 60;
 
-  const hours = Math.floor(minutes / 60);
-  if (hours < 24) return `${hours} h`;
+  if (hours < 24) {
+    return minutes ? `${hours} h ${minutes} min` : `${hours} h`;
+  }
 
   const days = Math.floor(hours / 24);
   return `${days} d`;
@@ -71,29 +81,36 @@ function getFollowup(applicant) {
     return { label: "Cerrado", className: "closed" };
   }
 
-  if (applicant.fechaPrimerContacto) {
-    return { label: "Contactado", className: "done" };
+  if (!applicant.fechaProximaAccion) {
+    return {
+      label: applicant.fechaPrimerContacto ? "Definir siguiente paso" : "Sin fecha",
+      className: "warning",
+    };
   }
 
-  const created = new Date(applicant.createdAt || 0);
-  const elapsedHours = (Date.now() - created.getTime()) / 3600000;
+  const dueAt = new Date(applicant.fechaProximaAccion);
+  if (Number.isNaN(dueAt.getTime())) {
+    return { label: "Fecha inválida", className: "warning" };
+  }
 
-  if (elapsedHours >= 6) {
+  const remaining = dueAt.getTime() - Date.now();
+
+  if (remaining < 0) {
     return {
-      label: `Urgente · ${formatElapsed(applicant.createdAt)}`,
+      label: `Vencida · ${formatDuration(remaining)}`,
       className: "critical",
     };
   }
 
-  if (elapsedHours >= 2) {
+  if (remaining <= 2 * 60 * 60 * 1000) {
     return {
-      label: `Sin contacto · ${formatElapsed(applicant.createdAt)}`,
+      label: `Vence en ${formatDuration(remaining)}`,
       className: "warning",
     };
   }
 
   return {
-    label: `Nuevo · ${formatElapsed(applicant.createdAt)}`,
+    label: `En ${formatDuration(remaining)}`,
     className: "new",
   };
 }
@@ -116,11 +133,19 @@ function RecruitTableRow({ applicant, isUpdating, onStatusChange, onViewApplican
           {statusLabels[applicant.estado] || applicant.estado || "Nuevo"}
         </span>
       </td>
+      <td>
+        <span className={`recruit-followup-badge ${getPriorityClass(applicant.prioridad)}`}>
+          {priorityLabels[applicant.prioridad] || "Media"}
+        </span>
+      </td>
       <td>{applicant.asignadoA || "Sin asignar"}</td>
       <td>
-        <span className={`recruit-followup-badge ${followup.className}`}>
-          {followup.label}
-        </span>
+        <div className="recruit-next-action">
+          <strong>{applicant.proximaAccion || "Sin próxima acción"}</strong>
+          <span className={`recruit-followup-badge ${followup.className}`}>
+            {followup.label}
+          </span>
+        </div>
       </td>
       <td>
         <div className="recruit-actions">
@@ -187,15 +212,16 @@ function RecruitTable({ applicants, loading, updatingId, onStatusChange, onViewA
             <th>Tipo vehículo</th>
             <th>Operación</th>
             <th>Estado</th>
+            <th>Prioridad</th>
             <th>Responsable</th>
-            <th>Seguimiento</th>
+            <th>Próxima acción</th>
             <th>Acciones</th>
           </tr>
         </thead>
         <tbody>
           {applicants.length === 0 ? (
             <tr>
-              <td className="empty-row" colSpan="9">
+              <td className="empty-row" colSpan="10">
                 {loading ? "Cargando postulantes..." : "No hay postulantes registrados."}
               </td>
             </tr>
@@ -204,7 +230,7 @@ function RecruitTable({ applicants, loading, updatingId, onStatusChange, onViewA
               <RecruitTableRow
                 applicant={applicant}
                 isUpdating={updatingId === applicant._id}
-                key={`${applicant._id}-${applicant.estado}-${applicant.fechaPrimerContacto || ""}`}
+                key={`${applicant._id}-${applicant.estado}-${applicant.fechaProximaAccion || ""}`}
                 onStatusChange={onStatusChange}
                 onViewApplicant={onViewApplicant}
               />
