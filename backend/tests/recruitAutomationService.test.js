@@ -4,6 +4,8 @@ const {
   buildRecruitAutomation,
   buildStatusAutomation,
   isAutomatedAction,
+  getDocumentProgress,
+  buildDocumentAutomation,
 } = require("../services/recruitAutomationService");
 
 test("Starken asigna Ricardo, prioridad alta y plazo de 2 horas", () => {
@@ -80,4 +82,70 @@ test("reconoce solo acciones generadas por automatización", () => {
   assert.equal(isAutomatedAction("Contactar postulante"), true);
   assert.equal(isAutomatedAction("Confirmar interés"), true);
   assert.equal(isAutomatedAction("Llamar nuevamente el viernes"), false);
+});
+
+
+test("documentos parciales pasan a documentación pendiente", () => {
+  const now = new Date("2026-11-09T12:00:00.000Z");
+  const documentacion = {
+    cedula: true,
+    licenciaConducir: false,
+    padronVehiculo: false,
+    permisoCirculacion: false,
+    revisionTecnica: false,
+    soap: false,
+  };
+
+  const result = buildDocumentAutomation("interesado", documentacion, now);
+
+  assert.equal(result.estado, "documentacion_pendiente");
+  assert.equal(result.proximaAccion, "Completar documentos");
+  assert.equal(result.progress.received, 1);
+  assert.equal(result.progress.complete, false);
+});
+
+test("seis documentos completos pasan automáticamente a en revisión", () => {
+  const now = new Date("2026-11-09T12:00:00.000Z");
+  const documentacion = {
+    cedula: true,
+    licenciaConducir: true,
+    padronVehiculo: true,
+    permisoCirculacion: true,
+    revisionTecnica: true,
+    soap: true,
+  };
+
+  const progress = getDocumentProgress(documentacion);
+  assert.equal(progress.received, 6);
+  assert.equal(progress.complete, true);
+
+  const result = buildDocumentAutomation(
+    "documentacion_pendiente",
+    documentacion,
+    now
+  );
+
+  assert.equal(result.estado, "en_revision");
+  assert.equal(result.proximaAccion, "Revisar documentos");
+  assert.equal(
+    result.fechaProximaAccion.toISOString(),
+    "2026-11-10T12:00:00.000Z"
+  );
+});
+
+test("documentos completos no reabren postulantes cerrados", () => {
+  const documentacion = {
+    cedula: true,
+    licenciaConducir: true,
+    padronVehiculo: true,
+    permisoCirculacion: true,
+    revisionTecnica: true,
+    soap: true,
+  };
+
+  for (const estado of ["aprobado", "convertido_a_chofer", "rechazado"]) {
+    const result = buildDocumentAutomation(estado, documentacion);
+    assert.equal(result.estado, undefined);
+    assert.equal(result.progress.complete, true);
+  }
 });
