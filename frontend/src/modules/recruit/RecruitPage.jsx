@@ -2,12 +2,27 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import RecruitTable from "./RecruitTable";
 import {
   getRecruitApplicants,
+  getRecruitApplicantMessage,
   updateRecruitApplicant,
   updateRecruitApplicantStatus,
 } from "./recruitApi";
 
 const terminalStatuses = new Set(["rechazado", "convertido_a_chofer"]);
 const validPriorities = new Set(["baja", "media", "alta"]);
+const documentFields = [
+  ["cedula", "Cédula"],
+  ["licenciaConducir", "Licencia de conducir"],
+  ["padronVehiculo", "Padrón del vehículo"],
+  ["permisoCirculacion", "Permiso de circulación"],
+  ["revisionTecnica", "Revisión técnica"],
+  ["soap", "SOAP vigente"],
+];
+
+function normalizeDocumentation(value = {}) {
+  return Object.fromEntries(
+    documentFields.map(([key]) => [key, Boolean(value?.[key])])
+  );
+}
 
 function normalizePriority(value) {
   return validPriorities.has(value) ? value : "media";
@@ -52,6 +67,10 @@ function RecruitPage() {
     proximaAccion: "",
     fechaProximaAccion: "",
   });
+  const [documentForm, setDocumentForm] = useState(
+    normalizeDocumentation()
+  );
+  const [messageLoading, setMessageLoading] = useState(false);
 
   const loadApplicants = useCallback(async () => {
     setLoading(true);
@@ -80,6 +99,7 @@ function RecruitPage() {
       proximaAccion: applicant.proximaAccion || "",
       fechaProximaAccion: toLocalDateTimeInput(applicant.fechaProximaAccion),
     });
+    setDocumentForm(normalizeDocumentation(applicant.documentacion));
   }
 
   function replaceApplicant(updatedApplicant) {
@@ -99,6 +119,7 @@ function RecruitPage() {
           updatedApplicant.fechaProximaAccion
         ),
       });
+      setDocumentForm(normalizeDocumentation(updatedApplicant.documentacion));
     }
   }
 
@@ -145,6 +166,52 @@ function RecruitPage() {
   async function handleMarkContacted() {
     if (!selectedApplicant) return;
     await handleStatusChange(selectedApplicant._id, "contactado");
+  }
+
+  async function handleSaveDocuments() {
+    if (!selectedApplicant) return;
+
+    setUpdatingId(selectedApplicant._id);
+    setError("");
+
+    try {
+      const response = await updateRecruitApplicant(selectedApplicant._id, {
+        documentacion: documentForm,
+      });
+      replaceApplicant(response.applicant);
+    } catch (requestError) {
+      setError(requestError.message);
+    } finally {
+      setUpdatingId(null);
+    }
+  }
+
+  async function handleOpenWhatsapp() {
+    if (!selectedApplicant) return;
+
+    const phone = String(
+      selectedApplicant.whatsapp || selectedApplicant.telefono || ""
+    ).replace(/\D/g, "");
+
+    if (!phone) {
+      setError("El postulante no tiene un teléfono válido para WhatsApp.");
+      return;
+    }
+
+    setMessageLoading(true);
+    setError("");
+
+    try {
+      const response = await getRecruitApplicantMessage(selectedApplicant._id);
+      const url = `https://wa.me/${phone}?text=${encodeURIComponent(
+        response.message || ""
+      )}`;
+      window.open(url, "_blank", "noopener,noreferrer");
+    } catch (requestError) {
+      setError(requestError.message);
+    } finally {
+      setMessageLoading(false);
+    }
   }
 
   const operationApplicants = useMemo(
@@ -392,6 +459,45 @@ function RecruitPage() {
             </label>
           </div>
 
+          <div className="recruit-documents-card">
+            <div className="recruit-documents-header">
+              <div>
+                <span className="section-kicker">DOCUMENTACIÓN</span>
+                <h5>Checklist del transportista</h5>
+              </div>
+              <strong>
+                {Object.values(documentForm).filter(Boolean).length}/{documentFields.length}
+              </strong>
+            </div>
+
+            <div className="recruit-documents-grid">
+              {documentFields.map(([key, label]) => (
+                <label key={key} className="recruit-document-check">
+                  <input
+                    type="checkbox"
+                    checked={documentForm[key]}
+                    onChange={(event) =>
+                      setDocumentForm((current) => ({
+                        ...current,
+                        [key]: event.target.checked,
+                      }))
+                    }
+                  />
+                  <span>{label}</span>
+                </label>
+              ))}
+            </div>
+
+            <button
+              type="button"
+              className="recruit-action-btn status"
+              disabled={updatingId === selectedApplicant._id}
+              onClick={handleSaveDocuments}
+            >
+              Guardar documentos
+            </button>
+          </div>
+
           <div className="recruit-followup-actions">
             <button
               type="button"
@@ -400,6 +506,15 @@ function RecruitPage() {
               onClick={handleSaveFollowup}
             >
               Guardar seguimiento
+            </button>
+
+            <button
+              type="button"
+              className="recruit-action-btn whatsapp"
+              disabled={messageLoading || updatingId === selectedApplicant._id}
+              onClick={handleOpenWhatsapp}
+            >
+              {messageLoading ? "Preparando..." : "Abrir WhatsApp preparado"}
             </button>
 
             <button
