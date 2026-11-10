@@ -6,6 +6,8 @@ const {
   buildRecruitAutomation,
   buildStatusAutomation,
   isAutomatedAction,
+  DOCUMENT_FIELDS,
+  buildDocumentAutomation,
 } = require("../services/recruitAutomationService");
 
 const { applicantStatuses } = RecruitApplicant;
@@ -207,6 +209,69 @@ const updateRecruitApplicant = async (req, res) => {
   }
 };
 
+// PATCH - actualizar checklist documental y mover pipeline cuando corresponda
+const updateRecruitApplicantDocuments = async (req, res) => {
+  try {
+    if (!validateApplicantId(req.params.id)) {
+      return res.status(400).json({
+        message: "ID de postulante inválido",
+      });
+    }
+
+    const currentApplicant = await RecruitApplicant.findById(req.params.id);
+
+    if (!currentApplicant) {
+      return res.status(404).json({
+        message: "Postulante no encontrado",
+      });
+    }
+
+    const incoming = req.body?.documentacion;
+    if (!incoming || typeof incoming !== "object" || Array.isArray(incoming)) {
+      return res.status(400).json({
+        message: "Checklist documental inválido",
+      });
+    }
+
+    const documentacion = Object.fromEntries(
+      DOCUMENT_FIELDS.map((key) => [key, Boolean(incoming[key])])
+    );
+
+    const automation = buildDocumentAutomation(
+      currentApplicant.estado,
+      documentacion
+    );
+
+    const updateData = { documentacion };
+
+    if (automation.estado) {
+      updateData.estado = automation.estado;
+      updateData.proximaAccion = automation.proximaAccion;
+      updateData.fechaProximaAccion = automation.fechaProximaAccion;
+    }
+
+    const updatedApplicant = await RecruitApplicant.findByIdAndUpdate(
+      req.params.id,
+      updateData,
+      {
+        new: true,
+        runValidators: true,
+      }
+    );
+
+    res.json({
+      message: "Documentación Recruit actualizada correctamente",
+      applicant: updatedApplicant,
+      progress: automation.progress,
+    });
+  } catch (error) {
+    res.status(400).json({
+      message: "Error al actualizar documentación Recruit",
+      error: error.message,
+    });
+  }
+};
+
 // PATCH - actualizar estado de un postulante Recruit
 const updateRecruitApplicantStatus = async (req, res) => {
   try {
@@ -292,5 +357,6 @@ module.exports = {
   getRecruitApplicantMessage,
   createRecruitApplicant,
   updateRecruitApplicant,
+  updateRecruitApplicantDocuments,
   updateRecruitApplicantStatus,
 };
