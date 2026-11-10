@@ -6,6 +6,7 @@ const AUTOMATED_ACTIONS = new Set([
   "Confirmar interés",
   "Solicitar documentos",
   "Revisar documentos",
+  "Completar documentos",
   "Asignar a operación",
   "Revisar postulación",
 ]);
@@ -80,6 +81,57 @@ function isAutomatedAction(action) {
   return AUTOMATED_ACTIONS.has(String(action || "").trim());
 }
 
+const DOCUMENT_FIELDS = [
+  "cedula",
+  "licenciaConducir",
+  "padronVehiculo",
+  "permisoCirculacion",
+  "revisionTecnica",
+  "soap",
+];
+
+function getDocumentProgress(documentacion = {}) {
+  const received = DOCUMENT_FIELDS.filter(
+    (key) => Boolean(documentacion?.[key])
+  ).length;
+
+  return {
+    received,
+    total: DOCUMENT_FIELDS.length,
+    complete: received === DOCUMENT_FIELDS.length,
+  };
+}
+
+function buildDocumentAutomation(currentStatus, documentacion, now = new Date()) {
+  const progress = getDocumentProgress(documentacion);
+
+  if (
+    progress.complete &&
+    !["aprobado", "convertido_a_chofer", "rechazado"].includes(currentStatus)
+  ) {
+    return {
+      estado: "en_revision",
+      proximaAccion: "Revisar documentos",
+      fechaProximaAccion: addHours(now, 24),
+      progress,
+    };
+  }
+
+  if (
+    progress.received > 0 &&
+    ["interesado", "documentacion_pendiente"].includes(currentStatus)
+  ) {
+    return {
+      estado: "documentacion_pendiente",
+      proximaAccion: "Completar documentos",
+      fechaProximaAccion: addHours(now, 24),
+      progress,
+    };
+  }
+
+  return { progress };
+}
+
 module.exports = {
   STARKEN_OPERATION,
   CHILEXPRESS_OPERATION,
@@ -87,4 +139,7 @@ module.exports = {
   buildRecruitAutomation,
   buildStatusAutomation,
   isAutomatedAction,
+  DOCUMENT_FIELDS,
+  getDocumentProgress,
+  buildDocumentAutomation,
 };
