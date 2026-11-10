@@ -4,6 +4,7 @@ import {
   getRecruitApplicants,
   getRecruitApplicantMessage,
   updateRecruitApplicant,
+  updateRecruitApplicantDocuments,
   updateRecruitApplicantStatus,
 } from "./recruitApi";
 
@@ -175,9 +176,10 @@ function RecruitPage() {
     setError("");
 
     try {
-      const response = await updateRecruitApplicant(selectedApplicant._id, {
-        documentacion: documentForm,
-      });
+      const response = await updateRecruitApplicantDocuments(
+        selectedApplicant._id,
+        documentForm
+      );
       replaceApplicant(response.applicant);
     } catch (requestError) {
       setError(requestError.message);
