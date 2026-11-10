@@ -28,6 +28,23 @@ const priorityLabels = {
   baja: "Baja",
 };
 
+const documentKeys = [
+  "cedula",
+  "licenciaConducir",
+  "padronVehiculo",
+  "permisoCirculacion",
+  "revisionTecnica",
+  "soap",
+];
+
+function getDocumentProgress(applicant) {
+  const received = documentKeys.filter(
+    (key) => Boolean(applicant.documentacion?.[key])
+  ).length;
+
+  return { received, total: documentKeys.length };
+}
+
 function getApplicantName(applicant) {
   return [applicant.nombre, applicant.apellido].filter(Boolean).join(" ") || "Sin nombre";
 }
@@ -116,6 +133,7 @@ function RecruitTableRow({ applicant, isUpdating, onStatusChange, onViewApplican
   const applicantName = getApplicantName(applicant);
   const whatsappUrl = getWhatsAppUrl(applicant);
   const followup = getFollowup(applicant);
+  const documents = getDocumentProgress(applicant);
 
   return (
     <tr>
@@ -135,6 +153,15 @@ function RecruitTableRow({ applicant, isUpdating, onStatusChange, onViewApplican
         </span>
       </td>
       <td>{applicant.asignadoA || "Sin asignar"}</td>
+      <td>
+        <span
+          className={`recruit-followup-badge ${
+            documents.received === documents.total ? "done" : "new"
+          }`}
+        >
+          {documents.received}/{documents.total}
+        </span>
+      </td>
       <td>
         <div className="recruit-next-action">
           <strong>{applicant.proximaAccion || "Sin próxima acción"}</strong>
@@ -210,6 +237,7 @@ function RecruitTable({ applicants, loading, updatingId, onStatusChange, onViewA
             <th>Estado</th>
             <th>Prioridad</th>
             <th>Responsable</th>
+            <th>Documentos</th>
             <th>Próxima acción</th>
             <th>Acciones</th>
           </tr>
@@ -217,7 +245,7 @@ function RecruitTable({ applicants, loading, updatingId, onStatusChange, onViewA
         <tbody>
           {applicants.length === 0 ? (
             <tr>
-              <td className="empty-row" colSpan="10">
+              <td className="empty-row" colSpan="11">
                 {loading ? "Cargando postulantes..." : "No hay postulantes registrados."}
               </td>
             </tr>
