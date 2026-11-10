@@ -19,7 +19,9 @@ function buildRecruitMessage(applicant = {}) {
     case "interesado":
       return `${greeting} para continuar con tu postulación a ${operation}, necesitamos validar tu documentación. Por favor ten disponible: cédula, licencia de conducir, padrón del vehículo, permiso de circulación, revisión técnica y SOAP vigente.`;
     case "documentacion_pendiente":
-      return `${greeting} estamos revisando tu documentación para ${operation}. Si aún tienes antecedentes pendientes, envíalos por este medio para completar la validación.`;
+      return `${greeting} aún tenemos documentación pendiente para tu postulación a ${operation}. Por favor envía los antecedentes faltantes por este medio para completar la validación.`;
+    case "en_revision":
+      return `${greeting} recibimos tu documentación para ${operation} y está en revisión. Te contactaremos cuando terminemos la validación.`;
     case "aprobado":
       return `${greeting} tu postulación fue aprobada para continuar en el proceso de ${operation}. El equipo MR&B se contactará contigo para coordinar asignación e inicio operacional.`;
     case "convertido_a_chofer":
