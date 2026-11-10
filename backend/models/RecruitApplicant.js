@@ -79,6 +79,14 @@ const recruitApplicantSchema = new mongoose.Schema(
       default: "",
       trim: true,
     },
+    documentacion: {
+      cedula: { type: Boolean, default: false },
+      licenciaConducir: { type: Boolean, default: false },
+      padronVehiculo: { type: Boolean, default: false },
+      permisoCirculacion: { type: Boolean, default: false },
+      revisionTecnica: { type: Boolean, default: false },
+      soap: { type: Boolean, default: false },
+    },
     anosExperiencia: {
       type: Number,
       min: 0,

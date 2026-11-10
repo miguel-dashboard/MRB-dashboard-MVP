@@ -44,3 +44,19 @@ export function updateRecruitApplicant(applicantId, payload) {
     body: JSON.stringify(payload),
   });
 }
+
+
+export function getRecruitApplicantMessage(applicantId) {
+  return requestJson(`${API_BASE}/${applicantId}/message`);
+}
+
+
+export function updateRecruitApplicantDocuments(applicantId, documentacion) {
+  return requestJson(`${API_BASE}/${applicantId}/documents`, {
+    method: "PATCH",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ documentacion }),
+  });
+}
