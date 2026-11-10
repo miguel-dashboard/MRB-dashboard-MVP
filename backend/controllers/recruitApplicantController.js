@@ -1,6 +1,7 @@
 const mongoose = require("mongoose");
 const normalizePhone = require("../utils/normalizePhone");
 const RecruitApplicant = require("../models/RecruitApplicant");
+const { buildRecruitMessage } = require("../services/recruitMessageService");
 const {
   buildRecruitAutomation,
   buildStatusAutomation,
@@ -77,6 +78,34 @@ const getRecruitApplicantById = async (req, res) => {
   } catch (error) {
     res.status(500).json({
       message: "Error al obtener el postulante",
+      error: error.message,
+    });
+  }
+};
+
+// GET - obtener mensaje sugerido para WhatsApp según etapa Recruit
+const getRecruitApplicantMessage = async (req, res) => {
+  try {
+    if (!validateApplicantId(req.params.id)) {
+      return res.status(400).json({
+        message: "ID de postulante inválido",
+      });
+    }
+
+    const applicant = await RecruitApplicant.findById(req.params.id);
+
+    if (!applicant) {
+      return res.status(404).json({
+        message: "Postulante no encontrado",
+      });
+    }
+
+    res.json({
+      message: buildRecruitMessage(applicant),
+    });
+  } catch (error) {
+    res.status(500).json({
+      message: "Error al preparar mensaje Recruit",
       error: error.message,
     });
   }
@@ -260,6 +289,7 @@ const updateRecruitApplicantStatus = async (req, res) => {
 module.exports = {
   getRecruitApplicants,
   getRecruitApplicantById,
+  getRecruitApplicantMessage,
   createRecruitApplicant,
   updateRecruitApplicant,
   updateRecruitApplicantStatus,
