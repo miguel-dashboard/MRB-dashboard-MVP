@@ -44,3 +44,8 @@ export function updateRecruitApplicant(applicantId, payload) {
     body: JSON.stringify(payload),
   });
 }
+
+
+export function getRecruitApplicantMessage(applicantId) {
+  return requestJson(`${API_BASE}/${applicantId}/message`);
+}
