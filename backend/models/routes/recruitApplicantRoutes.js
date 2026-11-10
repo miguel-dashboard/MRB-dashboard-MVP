@@ -5,6 +5,7 @@ const {
   getRecruitApplicantMessage,
   createRecruitApplicant,
   updateRecruitApplicant,
+  updateRecruitApplicantDocuments,
   updateRecruitApplicantStatus,
 } = require("../../controllers/recruitApplicantController");
 
@@ -24,6 +25,9 @@ router.post("/", createRecruitApplicant);
 
 // Actualizar un postulante Recruit
 router.put("/:id", updateRecruitApplicant);
+
+// Actualizar checklist documental de un postulante Recruit
+router.patch("/:id/documents", updateRecruitApplicantDocuments);
 
 // Actualizar estado de un postulante Recruit
 router.patch("/:id/status", updateRecruitApplicantStatus);
