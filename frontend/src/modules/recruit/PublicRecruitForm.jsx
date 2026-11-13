@@ -59,6 +59,7 @@ function PublicRecruitForm() {
         capacidadCarga: form.capacidadCarga,
         anosExperiencia: Number(form.anosExperiencia || 0),
         disponibilidad: form.disponibilidad,
+        operacion: form.operacionInteres,
         campaignName: form.operacionInteres,
         notas: form.notas,
         fuente: "manual",
