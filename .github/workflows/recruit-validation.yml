@@ -1,0 +1,43 @@
+name: Validación MR&B Recruit
+
+on:
+  pull_request:
+    branches:
+      - feature/recruit-automation-v3
+  push:
+    branches:
+      - fix/recruit-preserve-manual-followup-v3
+
+permissions:
+  contents: read
+
+jobs:
+  validar-recruit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - name: Obtener código
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Configurar Node.js 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: |
+            backend/package-lock.json
+            frontend/package-lock.json
+
+      - name: Instalar dependencias del backend
+        run: npm ci --prefix backend
+
+      - name: Ejecutar pruebas del backend
+        run: node --test backend/tests/*.test.js
+
+      - name: Instalar dependencias del frontend
+        run: npm ci --prefix frontend
+
+      - name: Compilar frontend
+        run: npm run build --prefix frontend
