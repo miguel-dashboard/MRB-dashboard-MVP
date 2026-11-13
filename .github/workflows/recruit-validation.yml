@@ -4,10 +4,6 @@ on:
   pull_request:
     branches:
       - feature/recruit-automation-v3
-  push:
-    branches:
-      - fix/recruit-preserve-manual-followup-v3
-
 permissions:
   contents: read
 
