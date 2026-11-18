@@ -81,10 +81,15 @@ test("ignora campos internos, desconocidos y otros atributos del modelo", async 
     "proximaAccion",
     "fechaProximaAccion",
   ]);
+  const allowedTrackingFields = new Set([
+    "utmSource", "utmMedium", "utmCampaign", "utmContent",
+  ]);
   for (const key of Object.keys(injected).filter(
     (key) => key !== "_id" && !generatedFields.has(key)
   )) {
-    assert.deepEqual(saved[key], baseline[key], key);
+    // La atribución UTM es entrada pública permitida; los campos internos no.
+    const expected = allowedTrackingFields.has(key) ? injected[key] : baseline[key];
+    assert.deepEqual(saved[key], expected, key);
   }
   assert.equal(saved.estado, "nuevo");
   assert.equal(saved.asignadoA, "Coordinación Chilexpress");

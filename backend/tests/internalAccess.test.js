@@ -21,6 +21,12 @@ test("protección HTTP de producción, token y desarrollo local", async (t) => {
   const request = (path, options) => fetch(base + path, options);
   t.mock.method(Applicant.prototype, "save", async function () { await this.validate(); return this; });
   t.mock.method(Applicant, "find", () => ({ sort: async () => [] }));
+  // PATCH /status consulta el registro antes de actualizarlo; evitar MongoDB real.
+  t.mock.method(Applicant, "findById", async () => ({
+    estado: "nuevo",
+    proximaAccion: "Contactar postulante",
+    fechaPrimerContacto: null,
+  }));
   t.mock.method(Applicant, "findByIdAndUpdate", async (_id, update) => ({ _id, ...update }));
   const id = "000000000000000000000001";
   const privateRoutes = [

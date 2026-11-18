@@ -246,8 +246,17 @@ const updateRecruitApplicantDocuments = async (req, res) => {
 
     if (automation.estado) {
       updateData.estado = automation.estado;
-      updateData.proximaAccion = automation.proximaAccion;
-      updateData.fechaProximaAccion = automation.fechaProximaAccion;
+
+      // Respetar las acciones que el coordinador haya definido manualmente.
+      // Solo reemplazar un seguimiento vacío o creado por la automatización.
+      const canReplaceFollowup =
+        !currentApplicant.proximaAccion ||
+        isAutomatedAction(currentApplicant.proximaAccion);
+
+      if (canReplaceFollowup) {
+        updateData.proximaAccion = automation.proximaAccion;
+        updateData.fechaProximaAccion = automation.fechaProximaAccion;
+      }
     }
 
     const updatedApplicant = await RecruitApplicant.findByIdAndUpdate(
